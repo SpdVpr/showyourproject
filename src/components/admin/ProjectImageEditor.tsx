@@ -21,6 +21,7 @@ export function ProjectImageEditor({ project, onSave, onCancel, isProcessing }: 
   const [galleryUrls, setGalleryUrls] = useState<string[]>(project.galleryUrls || []);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddImage = () => {
@@ -90,6 +91,63 @@ export function ProjectImageEditor({ project, onSave, onCancel, isProcessing }: 
         fileInputRef.current.value = '';
       }
     }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+
+    if (imageFiles.length === 0) {
+      alert('Please drop image files only');
+      return;
+    }
+
+    // Process each image file
+    for (const file of imageFiles) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`${file.name} is too large. Max size is 5MB.`);
+        continue;
+      }
+
+      setIsUploading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('projectId', project.id);
+
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const { url } = await response.json();
+        setGalleryUrls(prev => [...prev, url]);
+
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert(`Failed to upload ${file.name}`);
+      }
+    }
+
+    setIsUploading(false);
   };
 
   return (
@@ -166,57 +224,98 @@ export function ProjectImageEditor({ project, onSave, onCancel, isProcessing }: 
               </Button>
             </div>
 
-            {/* File Upload Option */}
-            <div className="flex items-center gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                variant="outline"
-                size="sm"
+            {/* File Upload & Drag Drop Zone */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Upload className="h-4 w-4 mr-1" />
+                  {isUploading ? "Uploading..." : "Upload Files"}
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Max 5MB each, JPG/PNG/WebP
+                </span>
+              </div>
+
+              {/* Drag & Drop Zone */}
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`
+                  border-2 border-dashed rounded-lg p-6 text-center transition-colors
+                  ${isDragging
+                    ? 'border-blue-400 bg-blue-50 text-blue-600'
+                    : 'border-gray-300 hover:border-gray-400 text-gray-500'
+                  }
+                `}
               >
-                <Upload className="h-4 w-4 mr-1" />
-                {isUploading ? "Uploading..." : "Upload File"}
-              </Button>
-              <span className="text-xs text-muted-foreground">
-                Max 5MB, JPG/PNG/WebP
-              </span>
+                <Upload className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-medium">
+                  {isDragging ? 'Drop images here' : 'Drag & drop images here'}
+                </p>
+                <p className="text-xs mt-1">
+                  Or click "Upload Files" to browse
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Gallery Images Grid */}
           {galleryUrls.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-              {galleryUrls.map((url, index) => (
-                <div key={index} className="relative group">
-                  <div className="relative w-full h-24 border rounded-lg overflow-hidden">
-                    <Image
-                      src={url}
-                      alt={`Gallery image ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      onError={() => handleRemoveImage(index)}
-                    />
-                    <Button
-                      onClick={() => handleRemoveImage(index)}
-                      size="sm"
-                      variant="destructive"
-                      className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
+            <div className="space-y-3 mt-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Gallery Images ({galleryUrls.length})</p>
+                <Button
+                  onClick={() => setGalleryUrls([])}
+                  size="sm"
+                  variant="outline"
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Clear All
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {galleryUrls.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <div className="relative w-full h-24 border rounded-lg overflow-hidden bg-gray-50">
+                      <Image
+                        src={url}
+                        alt={`Gallery image ${index + 1}`}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                        onError={() => handleRemoveImage(index)}
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      <Button
+                        onClick={() => handleRemoveImage(index)}
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 truncate">
+                      Image {index + 1}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 truncate">
-                    Image {index + 1}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
