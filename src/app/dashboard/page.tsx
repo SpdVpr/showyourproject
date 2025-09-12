@@ -134,6 +134,18 @@ export default function DashboardPage() {
     return new Date(timestamp).toLocaleDateString();
   };
 
+  // Calculate days remaining for featured projects
+  const getDaysRemaining = (featuredUntil: any) => {
+    if (!featuredUntil) return 0;
+
+    const expirationDate = featuredUntil.toDate ? featuredUntil.toDate() : new Date(featuredUntil);
+    const now = new Date();
+    const diffTime = expirationDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return Math.max(0, diffDays);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-7xl">
@@ -486,6 +498,39 @@ export default function DashboardPage() {
                           <Button size="sm" variant="outline" asChild>
                             <Link href="/submit">Resubmit Project</Link>
                           </Button>
+                        </div>
+                      )}
+
+                      {project.featured && (
+                        <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Star className="h-4 w-4 text-yellow-600 fill-current" />
+                              <div>
+                                <span className="text-sm font-semibold text-yellow-800">Currently Featured</span>
+                                <div className="text-xs text-yellow-600">
+                                  {project.featuredBy === 'admin'
+                                    ? 'Featured by admin (permanent)'
+                                    : (() => {
+                                        const daysRemaining = getDaysRemaining(project.featuredUntil);
+                                        return daysRemaining > 0
+                                          ? `${daysRemaining} day${daysRemaining === 1 ? '' : 's'} remaining`
+                                          : 'Expires today';
+                                      })()
+                                  }
+                                </div>
+                              </div>
+                            </div>
+
+                            {project.featuredBy !== 'admin' && (
+                              <div className="text-right">
+                                <div className="text-xs text-yellow-600">Expires</div>
+                                <div className="text-xs font-medium text-yellow-800">
+                                  {project.featuredUntil?.toDate?.()?.toLocaleDateString() || 'Soon'}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
 

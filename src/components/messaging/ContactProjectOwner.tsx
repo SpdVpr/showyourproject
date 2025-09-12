@@ -17,21 +17,31 @@ interface ContactProjectOwnerProps {
 }
 
 export function ContactProjectOwner({ project, onMessageSent }: ContactProjectOwnerProps) {
-  const { user } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
+  try {
+    const { user } = useAuth();
+    const [isOpen, setIsOpen] = useState(false);
+    const [message, setMessage] = useState("");
+    const [sending, setSending] = useState(false);
 
-  // Don't show contact button for own projects
-  if (user && user.id === project.submitterId) {
-    return null;
-  }
+    // Debug logging
+    console.log('ContactProjectOwner render:', {
+      user: user ? { id: user.id, displayName: user.displayName } : null,
+      project: { id: project.id, submitterId: project.submitterId, name: project.name },
+      isOwnProject: user && user.id === project.submitterId
+    });
+
+    // Don't show contact button for own projects
+    if (user && user.id === project.submitterId) {
+      console.log('ContactProjectOwner: Hiding for own project');
+      return null;
+    }
 
   // Show login prompt if not logged in
   if (!user) {
+    console.log('ContactProjectOwner: Showing login prompt');
     return (
-      <Card className="w-full">
-        <CardContent className="p-4 text-center">
+      <div className="w-full">
+        <div className="p-4 text-center">
           <MessageCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground mb-3">
             Sign in to contact the project owner
@@ -39,8 +49,8 @@ export function ContactProjectOwner({ project, onMessageSent }: ContactProjectOw
           <Button variant="outline" asChild>
             <a href="/login">Sign In</a>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
@@ -89,6 +99,7 @@ export function ContactProjectOwner({ project, onMessageSent }: ContactProjectOw
   };
 
   if (!isOpen) {
+    console.log('ContactProjectOwner: Showing contact button');
     return (
       <Button
         onClick={() => setIsOpen(true)}
@@ -100,6 +111,8 @@ export function ContactProjectOwner({ project, onMessageSent }: ContactProjectOw
       </Button>
     );
   }
+
+  console.log('ContactProjectOwner: Showing contact form');
 
   return (
     <Card className="w-full">
@@ -166,4 +179,14 @@ export function ContactProjectOwner({ project, onMessageSent }: ContactProjectOw
       </CardContent>
     </Card>
   );
+  } catch (error) {
+    console.error('ContactProjectOwner error:', error);
+    return (
+      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+        <p className="text-sm text-red-800">
+          Contact feature temporarily unavailable. Please try refreshing the page.
+        </p>
+      </div>
+    );
+  }
 }
