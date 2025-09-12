@@ -238,12 +238,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           {/* Contact Project Owner */}
           <Card>
             <CardContent className="p-4">
-              {/* Debug info */}
+              {/* Debug info for production troubleshooting */}
               {process.env.NODE_ENV === 'development' && (
                 <div className="mb-2 p-2 bg-yellow-100 text-xs">
                   Debug: ContactProjectOwner should render here
                   <br />Project: {project.name} (ID: {project.id})
                   <br />Submitter: {project.submitterId}
+                  <br />Timestamp: {new Date().toISOString()}
                 </div>
               )}
               <ContactProjectOwner project={serializedProject} />

@@ -23,11 +23,12 @@ export function ContactProjectOwner({ project, onMessageSent }: ContactProjectOw
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
 
-    // Debug logging
+    // Debug logging for production troubleshooting
     console.log('ContactProjectOwner render:', {
       user: user ? { id: user.id, displayName: user.displayName } : null,
       project: { id: project.id, submitterId: project.submitterId, name: project.name },
-      isOwnProject: user && user.id === project.submitterId
+      isOwnProject: user && user.id === project.submitterId,
+      timestamp: new Date().toISOString()
     });
 
     // Don't show contact button for own projects
