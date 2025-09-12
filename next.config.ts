@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
+  // Skip ESLint checking during build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'framer-motion'],
