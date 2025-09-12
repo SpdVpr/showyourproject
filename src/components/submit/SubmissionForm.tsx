@@ -25,9 +25,8 @@ import { useRouter } from "next/navigation";
 import { invalidateCache } from "@/lib/cache";
 
 const steps = [
-  { id: 1, title: "Basic Info", description: "URL, project name and short description" },
-  { id: 2, title: "Details", description: "Full description, tags, category and images" },
-  { id: 3, title: "Preview", description: "Review how your project will appear" },
+  { id: 1, title: "Project Details", description: "Fill in all project information" },
+  { id: 2, title: "Review & Submit", description: "Review and confirm your submission" },
 ];
 
 export function SubmissionForm() {
@@ -42,6 +41,8 @@ export function SubmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [urlMetadata, setUrlMetadata] = useState<any>(null);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+  const [customThumbnail, setCustomThumbnail] = useState<string>("");
+  const [useCustomThumbnail, setUseCustomThumbnail] = useState(false);
 
   const form = useForm<ProjectSubmission>({
     resolver: zodResolver(projectSubmissionSchema),
@@ -101,15 +102,20 @@ export function SubmissionForm() {
 
     switch (currentStep) {
       case 1:
-        fieldsToValidate = ["name", "websiteUrl", "tagline"];
-        break;
-      case 2:
-        fieldsToValidate = ["description", "category", "teamSize", "foundedYear"];
+        // Validate all fields in step 1 (all project details)
+        fieldsToValidate = ["name", "websiteUrl", "tagline", "description", "category", "teamSize", "foundedYear"];
         break;
     }
 
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
+      // Check if we have required data
+      if (currentStep === 1) {
+        if (!urlMetadata && !useCustomThumbnail) {
+          alert('Please wait for website metadata to load or provide a custom thumbnail.');
+          return;
+        }
+      }
       setCurrentStep(prev => Math.min(prev + 1, steps.length));
     }
   };
@@ -146,17 +152,22 @@ export function SubmissionForm() {
   const fetchUrlMetadata = async (url: string) => {
     const normalizedUrl = normalizeUrl(url);
     if (!normalizedUrl || !normalizedUrl.startsWith('http')) return;
-    
+
     setIsLoadingMetadata(true);
     try {
-      const response = await fetch('/api/metadata', {
+      const response = await fetch('/api/fetch-metadata', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: normalizedUrl }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const { metadata } = await response.json();
       setUrlMetadata(metadata);
-      
+
       // Auto-fill form fields with real data
       if (metadata.title) {
         // Limit project name to 27 characters
@@ -165,12 +176,20 @@ export function SubmissionForm() {
       }
       if (metadata.description) {
         // Use description for both tagline (short) and full description
-        const shortDesc = metadata.description.substring(0, 100);
+        const shortDesc = metadata.description.substring(0, 160); // SEO friendly length
         form.setValue('tagline', shortDesc);
         form.setValue('description', metadata.description);
       }
+
+      // Set thumbnail from metadata if available
+      if (metadata.image) {
+        setCustomThumbnail(metadata.image);
+        setUseCustomThumbnail(false); // Use auto-detected by default
+      }
+
     } catch (error) {
       console.error('Failed to fetch metadata:', error);
+      setUrlMetadata(null);
     } finally {
       setIsLoadingMetadata(false);
     }
@@ -217,12 +236,19 @@ export function SubmissionForm() {
     setIsSubmitting(true);
 
     try {
-      // Upload thumbnail image with optimization
+      // Determine thumbnail URL
       let thumbnailUrl = "";
       if (thumbnailFile) {
+        // User uploaded a file
         console.log("Uploading and optimizing thumbnail...");
         const tempProjectId = `temp_${Date.now()}`;
         thumbnailUrl = await uploadProjectThumbnail(thumbnailFile, tempProjectId);
+      } else if (useCustomThumbnail && customThumbnail) {
+        // User provided custom URL
+        thumbnailUrl = customThumbnail;
+      } else if (urlMetadata && urlMetadata.image) {
+        // Use auto-detected image from metadata
+        thumbnailUrl = urlMetadata.image;
       }
 
       // Upload gallery images with optimization
@@ -433,6 +459,82 @@ export function SubmissionForm() {
                     </div>
                   </motion.div>
                 )}
+
+                {/* Thumbnail Selector */}
+                {urlMetadata && urlMetadata.image && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200"
+                  >
+                    <h4 className="font-medium text-gray-900 mb-3">Project Thumbnail</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="radio"
+                          id="auto-thumbnail"
+                          name="thumbnail-choice"
+                          checked={!useCustomThumbnail}
+                          onChange={() => setUseCustomThumbnail(false)}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <label htmlFor="auto-thumbnail" className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <img
+                              src={urlMetadata.image}
+                              alt="Auto-detected thumbnail"
+                              className="w-16 h-12 object-cover rounded border"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Use auto-detected image</p>
+                              <p className="text-xs text-gray-500">From website metadata</p>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="radio"
+                          id="custom-thumbnail"
+                          name="thumbnail-choice"
+                          checked={useCustomThumbnail}
+                          onChange={() => setUseCustomThumbnail(true)}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <label htmlFor="custom-thumbnail" className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">Use custom image URL</p>
+                          <p className="text-xs text-gray-500">Provide your own thumbnail</p>
+                        </label>
+                      </div>
+
+                      {useCustomThumbnail && (
+                        <div className="ml-7 mt-2">
+                          <input
+                            type="url"
+                            value={customThumbnail}
+                            onChange={(e) => setCustomThumbnail(e.target.value)}
+                            placeholder="https://example.com/your-image.jpg"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {customThumbnail && (
+                            <img
+                              src={customThumbnail}
+                              alt="Custom thumbnail preview"
+                              className="mt-2 w-16 h-12 object-cover rounded border"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </div>
 
@@ -542,28 +644,8 @@ export function SubmissionForm() {
                 )}
               </div>
             </div>
-          </motion.div>
-        );
 
-      case 2:
-        return (
-          <motion.div
-            key="step2"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
-          >
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Project Details
-              </h3>
-              <p className="text-gray-600">
-                Complete description, tags, category and upload images
-              </p>
-            </div>
-
-            {/* Full Description - FIRST */}
+            {/* Full Description */}
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 rounded-2xl blur-xl"></div>
               <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
@@ -794,216 +876,14 @@ export function SubmissionForm() {
                 </div>
               </div>
             </div>
-
-            {/* Images Upload */}
-            <div className="space-y-6">
-              {/* Thumbnail Upload */}
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-600/10 to-rose-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-pink-600 to-rose-600 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Project Thumbnail</h3>
-                      <p className="text-gray-600">Main image for your project card</p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
-                      dragOver === 'thumbnail'
-                        ? 'border-pink-500 bg-pink-50'
-                        : 'border-gray-300 hover:border-pink-400 hover:bg-pink-50'
-                    }`}
-                    onDragOver={(e) => handleDragOver(e, 'thumbnail')}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, 'thumbnail')}
-                  >
-                    {thumbnailFile ? (
-                      <div className="space-y-4">
-                        <img
-                          src={URL.createObjectURL(thumbnailFile)}
-                          alt="Thumbnail preview"
-                          className="w-32 h-32 object-cover rounded-xl mx-auto border-2 border-pink-200"
-                        />
-                        <div>
-                          <p className="font-medium text-gray-900">{thumbnailFile.name}</p>
-                          <p className="text-sm text-gray-500">
-                            {formatFileSize(thumbnailFile.size)}
-                          </p>
-                          <p className="text-xs text-green-600 mt-1">
-                            ✓ Will be optimized before upload
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setThumbnailFile(null)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          Remove
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="w-16 h-16 bg-pink-100 rounded-xl flex items-center justify-center mx-auto">
-                          <Upload className="h-8 w-8 text-pink-600" />
-                        </div>
-                        <div>
-                          <p className="text-lg font-medium text-gray-900">Upload thumbnail</p>
-                          <p className="text-gray-600">Drag & drop or click to browse</p>
-                          <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 5MB</p>
-                          <p className="text-xs text-green-600 mt-1">Images will be automatically optimized</p>
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(file, 'thumbnail');
-                          }}
-                          className="hidden"
-                          id="thumbnail-upload"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('thumbnail-upload')?.click()}
-                          className="border-pink-300 text-pink-700 hover:bg-pink-50"
-                        >
-                          Choose File
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Gallery Upload */}
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 to-purple-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Gallery Images</h3>
-                      <p className="text-gray-600">Additional screenshots (up to 5)</p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
-                      dragOver === 'gallery'
-                        ? 'border-violet-500 bg-violet-50'
-                        : 'border-gray-300 hover:border-violet-400 hover:bg-violet-50'
-                    }`}
-                    onDragOver={(e) => handleDragOver(e, 'gallery')}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, 'gallery')}
-                  >
-                    {galleryFiles.length > 0 ? (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          {galleryFiles.map((file, index) => (
-                            <div key={index} className="relative group">
-                              <img
-                                src={URL.createObjectURL(file)}
-                                alt={`Gallery ${index + 1}`}
-                                className="w-full h-24 object-cover rounded-lg border-2 border-violet-200"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeGalleryImage(index)}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                        {galleryFiles.length < 5 && (
-                          <div>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={(e) => {
-                                const files = Array.from(e.target.files || []);
-                                files.forEach(file => {
-                                  if (galleryFiles.length < 5) {
-                                    handleFileUpload(file, 'gallery');
-                                  }
-                                });
-                              }}
-                              className="hidden"
-                              id="gallery-upload"
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => document.getElementById('gallery-upload')?.click()}
-                              className="border-violet-300 text-violet-700 hover:bg-violet-50"
-                            >
-                              <Plus className="h-4 w-4 mr-2" />
-                              Add More ({galleryFiles.length}/5)
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="w-16 h-16 bg-violet-100 rounded-xl flex items-center justify-center mx-auto">
-                          <Upload className="h-8 w-8 text-violet-600" />
-                        </div>
-                        <div>
-                          <p className="text-lg font-medium text-gray-900">Upload gallery images</p>
-                          <p className="text-gray-600">Drag & drop or click to browse</p>
-                          <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 5MB each (max 5 images)</p>
-                          <p className="text-xs text-green-600 mt-1">Images will be automatically optimized</p>
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={(e) => {
-                            const files = Array.from(e.target.files || []);
-                            files.forEach(file => handleFileUpload(file, 'gallery'));
-                          }}
-                          className="hidden"
-                          id="gallery-upload-initial"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('gallery-upload-initial')?.click()}
-                          className="border-violet-300 text-violet-700 hover:bg-violet-50"
-                        >
-                          Choose Files
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
           </motion.div>
         );
 
-      case 3:
+      case 2:
         const formData = watch();
         return (
           <motion.div
-            key="step3"
+            key="step2"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -1011,102 +891,68 @@ export function SubmissionForm() {
           >
             <div className="text-center">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                🎉 Preview Your Project
+                Review & Submit
               </h3>
               <p className="text-gray-600">
-                This is how your project will appear on ShowYourProject.com
+                Review your project details and submit for approval
               </p>
             </div>
 
-            {/* Project Card Preview */}
+            {/* Project Preview Card */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 to-purple-600/10 rounded-2xl blur-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl blur-xl"></div>
               <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
-                <h4 className="text-lg font-semibold text-gray-900 mb-6 text-center">Project Card Preview</h4>
+                <h4 className="text-lg font-semibold text-gray-900 mb-6">Project Preview</h4>
 
-                {/* Realistic Project Card */}
-                <div className="max-w-sm mx-auto bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300">
-                  {/* Thumbnail */}
-                  <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                    {thumbnailFile ? (
-                      <img
-                        src={URL.createObjectURL(thumbnailFile)}
-                        alt="Project thumbnail"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : urlMetadata?.image ? (
-                      <img
-                        src={urlMetadata.image}
-                        alt="Project thumbnail"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="text-white text-center">
-                        <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* Project Card Preview */}
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                  <div className="flex items-start space-x-4">
+                    {/* Thumbnail Preview */}
+                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {(useCustomThumbnail && customThumbnail) || (urlMetadata && urlMetadata.image) ? (
+                        <img
+                          src={useCustomThumbnail ? customThumbnail : urlMetadata?.image}
+                          alt="Project thumbnail"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <p className="text-sm">Upload thumbnail</p>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
 
-                  {/* Card Content */}
-                  <div className="p-6">
-                    <h3 className="font-bold text-xl text-gray-900 mb-2 line-clamp-2">
-                      {formData.name || "Your Project Name"}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                      {formData.tagline || "Your short description will appear here..."}
-                    </p>
-
-                    {/* Category Badge */}
-                    {formData.category && (
-                      <div className="mb-4">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                          {formData.category}
-                        </Badge>
-                      </div>
-                    )}
-
-                    {/* Tags */}
-                    {tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {tags.slice(0, 3).map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {tags.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{tags.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    {/* Project Info */}
+                    <div className="flex-1 min-w-0">
+                      <h5 className="font-semibold text-gray-900 truncate">
+                        {formData.name || "Project Name"}
+                      </h5>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {formData.tagline || "Project tagline will appear here"}
+                      </p>
+                      <div className="flex items-center space-x-4 mt-3">
                         <div className="flex items-center space-x-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                           </svg>
-                          <span>0</span>
+                          <span className="text-sm text-gray-500">0</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
-                          <span>0</span>
+                          <span className="text-sm text-gray-500">0</span>
                         </div>
                       </div>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                        Visit
-                      </Button>
+                      <div className="mt-3">
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                          Visit Website
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1127,14 +973,21 @@ export function SubmissionForm() {
                       <li><strong>URL:</strong> {formData.websiteUrl || "Not set"}</li>
                       <li><strong>Category:</strong> {formData.category || "Not set"}</li>
                       <li><strong>Tags:</strong> {tags.length > 0 ? tags.join(", ") : "None"}</li>
+                      <li><strong>Team Size:</strong> {formData.teamSize || "Not set"}</li>
+                      <li><strong>Founded:</strong> {formData.foundedYear || "Not set"}</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h5 className="font-medium text-gray-900 mb-2">Media</h5>
+                    <h5 className="font-medium text-gray-900 mb-2">Content</h5>
                     <ul className="space-y-2 text-sm text-gray-600">
-                      <li><strong>Thumbnail:</strong> {thumbnailFile ? "✅ Uploaded" : "❌ Missing"}</li>
-                      <li><strong>Gallery:</strong> {galleryFiles.length} images</li>
+                      <li><strong>Tagline:</strong> {formData.tagline ? "✅ Set" : "❌ Missing"}</li>
+                      <li><strong>Description:</strong> {formData.description ? "✅ Set" : "❌ Missing"}</li>
+                      <li><strong>Thumbnail:</strong> {
+                        (useCustomThumbnail && customThumbnail) || (urlMetadata && urlMetadata.image) || thumbnailFile
+                          ? "✅ Set"
+                          : "❌ Missing"
+                      }</li>
                       <li><strong>Metadata:</strong> {urlMetadata ? "✅ Loaded" : "❌ Not loaded"}</li>
                     </ul>
                   </div>
@@ -1155,6 +1008,7 @@ export function SubmissionForm() {
                 </div>
               </div>
             </div>
+
           </motion.div>
         );
 
