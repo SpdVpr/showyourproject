@@ -29,13 +29,17 @@ export function HtmlContent({ content, className = "" }: HtmlContentProps) {
   }, [content]);
 
   if (!sanitizedContent) {
-    // Fallback to plain text
-    return <div className={className}>{content}</div>;
+    // Fallback to plain text with preserved formatting
+    return (
+      <div className={`html-content ${className}`}>
+        {content}
+      </div>
+    );
   }
 
   return (
     <div
-      className={className}
+      className={`html-content ${className}`}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );

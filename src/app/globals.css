@@ -197,6 +197,62 @@
   padding-left: 1.5rem;
 }
 
+/* HTML Content Styles - Preserve formatting */
+.html-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.html-content p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.html-content p:last-child {
+  margin-bottom: 0;
+}
+
+.html-content br {
+  display: block;
+  margin: 0.5rem 0;
+  content: "";
+}
+
+.html-content strong, .html-content b {
+  font-weight: 600;
+}
+
+.html-content em, .html-content i {
+  font-style: italic;
+}
+
+.html-content ul, .html-content ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.html-content li {
+  margin-bottom: 0.5rem;
+}
+
+.html-content blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.html-content a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.html-content a:hover {
+  color: #1d4ed8;
+}
+
 .ProseMirror ul {
   list-style-type: disc;
 }

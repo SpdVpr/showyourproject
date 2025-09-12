@@ -587,14 +587,38 @@ export function SubmissionForm() {
                     className="text-lg"
                   />
                 </div>
-                {errors.description && (
-                  <p className="text-sm text-red-500 mt-2 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {errors.description.message}
-                  </p>
-                )}
+
+                {/* Character Counter */}
+                <div className="flex justify-between items-center mt-2">
+                  <div className="flex items-center space-x-2">
+                    {errors.description && (
+                      <p className="text-sm text-red-500 flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {errors.description.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {(() => {
+                      const description = watch('description') || '';
+                      // Remove HTML tags for character count
+                      const textOnly = description.replace(/<[^>]*>/g, '');
+                      const charCount = textOnly.length;
+                      const isLong = charCount > 500;
+                      const isVeryLong = charCount > 1000;
+
+                      return (
+                        <span className={`${isVeryLong ? 'text-red-500' : isLong ? 'text-orange-500' : 'text-gray-500'}`}>
+                          {charCount.toLocaleString()} characters
+                          {isVeryLong && ' (very long)'}
+                          {isLong && !isVeryLong && ' (long)'}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                </div>
               </div>
             </div>
 
