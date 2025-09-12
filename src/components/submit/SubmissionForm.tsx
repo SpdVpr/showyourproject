@@ -219,8 +219,13 @@ export function SubmissionForm() {
   };
 
   const onSubmit = async (data: ProjectSubmission) => {
+    console.log("🚀 onSubmit function called!");
     console.log("Submit attempt - User:", user);
     console.log("User ID:", user?.id);
+    console.log("Form data:", data);
+    console.log("Tags:", tags);
+    console.log("Thumbnail file:", thumbnailFile);
+    console.log("URL metadata:", urlMetadata);
 
     if (!user || !user.id) {
       console.error("User not authenticated:", { user, hasId: !!user?.id });
@@ -1392,7 +1397,13 @@ export function SubmissionForm() {
               ) : (
                 <Button
                   type="button"
-                  onClick={handleSubmit(onSubmit)}
+                  onClick={handleSubmit(
+                    onSubmit,
+                    (errors) => {
+                      console.log("Form validation failed:", errors);
+                      alert("Please fill in all required fields correctly.");
+                    }
+                  )}
                   disabled={isSubmitting}
                   className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
