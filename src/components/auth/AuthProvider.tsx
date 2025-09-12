@@ -10,7 +10,8 @@ import {
   GithubAuthProvider,
   signInWithPopup,
   User as FirebaseUser,
-  updateProfile
+  updateProfile,
+  sendEmailVerification
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -152,8 +153,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Update display name
         await updateProfile(firebaseUser, { displayName });
 
+        // Send email verification
+        await sendEmailVerification(firebaseUser, {
+          url: `${window.location.origin}/dashboard`,
+          handleCodeInApp: false
+        });
+
         // Create user document with display name
         await createUserDocument(firebaseUser, { displayName });
+
+        console.log('Email verification sent to:', email);
       } catch (error) {
         setLoading(false);
         throw error;

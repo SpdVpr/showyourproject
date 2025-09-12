@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   
   const { signUp, signInWithGoogle, signInWithGithub } = useAuth();
   const router = useRouter();
@@ -40,7 +41,11 @@ export default function RegisterPage() {
 
     try {
       await signUp(email, password, displayName);
-      router.push("/dashboard");
+      setSuccess("Account created successfully! Please check your email for verification link before signing in.");
+      // Don't redirect immediately - let user verify email first
+      setTimeout(() => {
+        router.push("/login?message=Please verify your email before signing in");
+      }, 3000);
     } catch (error: any) {
       setError(error.message || "Failed to create account");
     } finally {
@@ -90,6 +95,12 @@ export default function RegisterPage() {
           {error && (
             <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
+              {success}
             </div>
           )}
 
