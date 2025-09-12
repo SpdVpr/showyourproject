@@ -154,15 +154,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await updateProfile(firebaseUser, { displayName });
 
         // Send email verification
-        await sendEmailVerification(firebaseUser, {
-          url: `${window.location.origin}/dashboard`,
-          handleCodeInApp: false
-        });
+        console.log('Attempting to send email verification to:', email);
+        try {
+          await sendEmailVerification(firebaseUser, {
+            url: `${window.location.origin}/dashboard`,
+            handleCodeInApp: false
+          });
+          console.log('✅ Email verification sent successfully to:', email);
+        } catch (verificationError) {
+          console.error('❌ Failed to send email verification:', verificationError);
+          // Don't throw error - user account is still created
+        }
 
         // Create user document with display name
         await createUserDocument(firebaseUser, { displayName });
 
-        console.log('Email verification sent to:', email);
+        console.log('User registration completed for:', email);
       } catch (error) {
         setLoading(false);
         throw error;

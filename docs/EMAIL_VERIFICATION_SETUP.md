@@ -1,21 +1,29 @@
 # Email Verification Setup Guide
 
-## Firebase Console Configuration
+## ⚠️ IMPORTANT: Required Firebase Console Setup
 
-### 1. Enable Email Verification
+### 1. Authorized Domains (CRITICAL)
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Select your project: `showyourproject-com`
-3. Navigate to **Authentication** → **Templates**
-4. Click on **Email address verification**
+3. Navigate to **Authentication** → **Settings** → **Authorized domains**
+4. Make sure these domains are added:
+   - `showyourproject.com`
+   - `localhost` (for development)
+   - Any other domains you use
 
-### 2. Configure Email Template
+### 2. Enable Email Verification Templates
+1. Navigate to **Authentication** → **Templates**
+2. Click on **Email address verification**
+3. **ENABLE** the template (toggle switch must be ON)
+
+### 3. Configure Email Template
 **Subject:** Verify your email for ShowYourProject.com
 
 **Email body:**
 ```
 Hello,
 
-Welcome to ShowYourProject.com! 
+Welcome to ShowYourProject.com!
 
 Please verify your email address by clicking the link below:
 
@@ -30,15 +38,23 @@ The ShowYourProject.com Team
 ShowYourProject.com - Showcase your projects to the world
 ```
 
-### 3. Configure Action URL
-- **Action URL:** `https://showyourproject.com/verify-email`
-- This URL will handle the email verification process
+### 4. Configure Action URL (IMPORTANT)
+- **Action URL:** Leave as default Firebase URL OR set to `https://showyourproject.com/__/auth/action`
+- **DO NOT** use custom URL unless you implement custom handler
 
-### 4. Sender Configuration
-1. Go to **Authentication** → **Settings** → **Authorized domains**
-2. Make sure `showyourproject.com` is in the list
-3. Go to **Authentication** → **Templates** → **SMTP settings**
-4. Configure custom SMTP (optional) or use Firebase default
+### 5. Check Email Provider Settings
+1. Go to **Authentication** → **Settings** → **Project settings**
+2. Scroll to **Public-facing name** - set to "ShowYourProject.com"
+3. **Support email** - set to your support email
+4. This affects the "From" field in verification emails
+
+### 6. SMTP Configuration (Optional but Recommended)
+1. Go to **Authentication** → **Templates** → **SMTP settings**
+2. For better deliverability, configure custom SMTP:
+   - **SMTP server:** smtp.gmail.com (or your provider)
+   - **Port:** 587
+   - **Username/Password:** Your email credentials
+3. Or use Firebase default (may go to spam)
 
 ### 5. Email Verification Flow
 
