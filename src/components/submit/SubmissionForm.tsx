@@ -524,7 +524,7 @@ export function SubmissionForm() {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">Short Description</h3>
-                    <p className="text-gray-600">Brief tagline for project cards (max 100 chars)</p>
+                    <p className="text-gray-600">Brief tagline for project cards (max 160 chars)</p>
                   </div>
                 </div>
 
@@ -534,7 +534,7 @@ export function SubmissionForm() {
                     {...register("tagline")}
                     placeholder="e.g. The ultimate productivity tool for modern teams..."
                     className="min-h-[80px] text-lg pl-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-0 transition-all duration-200 resize-none"
-                    maxLength={100}
+                    maxLength={160}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -544,7 +544,7 @@ export function SubmissionForm() {
                   <div className="absolute right-4 bottom-4">
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-gray-500">
-                        {watch('tagline')?.length || 0}/100
+                        {watch('tagline')?.length || 0}/160
                       </span>
                       <div className={`w-3 h-3 rounded-full transition-all duration-200 ${
                         watch('tagline') && watch('tagline').length > 10 ? 'bg-green-500' : 'bg-gray-300'

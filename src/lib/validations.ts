@@ -33,7 +33,7 @@ export const projectSubmissionSchema = z.object({
 
   tagline: z.string()
     .min(10, 'Tagline must be at least 10 characters')
-    .max(120, 'Tagline must be less than 120 characters'),
+    .max(160, 'Tagline must be less than 160 characters'),
 
   description: z.string()
     .min(100, 'Description must be at least 100 characters')
@@ -72,7 +72,7 @@ export const basicInfoSchema = z.object({
   
   tagline: z.string()
     .min(10, 'Tagline must be at least 10 characters')
-    .max(120, 'Tagline must be less than 120 characters'),
+    .max(160, 'Tagline must be less than 160 characters'),
   
   websiteUrl: z.string()
     .transform(normalizeUrl)
