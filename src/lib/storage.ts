@@ -114,6 +114,64 @@ export async function uploadProjectLogo(file: File, projectId: string): Promise<
 }
 
 /**
+ * Download image from URL and upload to Firebase Storage
+ * @param imageUrl - URL of the image to download
+ * @param projectId - Project ID for path
+ * @param imageType - Type of image (thumbnail, gallery, etc.)
+ * @returns Promise<string> - Firebase Storage download URL
+ */
+export async function downloadAndUploadImage(
+  imageUrl: string,
+  projectId: string,
+  imageType: string = 'thumbnail'
+): Promise<string> {
+  try {
+    console.log(`Downloading image from URL: ${imageUrl}`);
+
+    // Fetch the image from the URL
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+
+    // Get the image data as blob
+    const blob = await response.blob();
+
+    // Determine file extension from content type or URL
+    let extension = 'jpg';
+    const contentType = response.headers.get('content-type');
+    if (contentType) {
+      if (contentType.includes('png')) extension = 'png';
+      else if (contentType.includes('webp')) extension = 'webp';
+      else if (contentType.includes('gif')) extension = 'gif';
+    } else {
+      // Try to get extension from URL
+      const urlExtension = imageUrl.split('.').pop()?.toLowerCase();
+      if (urlExtension && ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExtension)) {
+        extension = urlExtension === 'jpeg' ? 'jpg' : urlExtension;
+      }
+    }
+
+    // Create a File object from the blob
+    const fileName = `${imageType}_${Date.now()}.${extension}`;
+    const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+
+    console.log(`Downloaded image size: ${formatFileSize(file.size)}`);
+
+    // Upload to Firebase Storage with optimization
+    const path = `projects/${imageType}s/${projectId}_${Date.now()}_${fileName}`;
+    const downloadURL = await uploadFile(file, path, true);
+
+    console.log(`Image successfully uploaded to Firebase Storage: ${downloadURL}`);
+    return downloadURL;
+
+  } catch (error) {
+    console.error('Error downloading and uploading image:', error);
+    throw new Error(`Failed to download and upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Delete a file from Firebase Storage
  * @param url - The download URL of the file to delete
  */

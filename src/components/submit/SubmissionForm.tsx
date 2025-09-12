@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { ProjectSubmission } from "@/types";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { projectService } from "@/lib/firebaseServices";
-import { uploadProjectThumbnail, uploadProjectGallery } from "@/lib/storage";
+import { uploadProjectThumbnail, uploadProjectGallery, downloadAndUploadImage } from "@/lib/storage";
 import { formatFileSize } from "@/lib/imageOptimization";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { useRouter } from "next/navigation";
@@ -72,8 +72,8 @@ export function SubmissionForm() {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0 && !tags.includes(tag));
 
-    // Add new tags up to the limit of 10 total
-    const availableSlots = 10 - tags.length;
+    // Add new tags up to the limit of 8 total
+    const availableSlots = 8 - tags.length;
     const tagsToAdd = newTags.slice(0, availableSlots);
 
     if (tagsToAdd.length > 0) {
@@ -244,8 +244,10 @@ export function SubmissionForm() {
         const tempProjectId = `temp_${Date.now()}`;
         thumbnailUrl = await uploadProjectThumbnail(thumbnailFile, tempProjectId);
       } else if (urlMetadata && urlMetadata.image) {
-        // Use auto-detected image from metadata
-        thumbnailUrl = urlMetadata.image;
+        // Download and upload auto-detected image from metadata to Firebase Storage
+        console.log("Downloading and uploading thumbnail from metadata...");
+        const tempProjectId = `temp_${Date.now()}`;
+        thumbnailUrl = await downloadAndUploadImage(urlMetadata.image, tempProjectId, 'thumbnail');
       }
 
       // Upload gallery images with optimization
@@ -681,8 +683,19 @@ export function SubmissionForm() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Tags</h3>
-                      <p className="text-gray-600">Add relevant keywords</p>
+                      <div className="flex items-center space-x-3">
+                        <h3 className="text-xl font-semibold text-gray-900">Tags</h3>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          tags.length >= 8
+                            ? 'bg-red-100 text-red-700'
+                            : tags.length >= 6
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {tags.length}/8
+                        </span>
+                      </div>
+                      <p className="text-gray-600">Add relevant keywords (max 8 tags)</p>
                     </div>
                   </div>
 
@@ -703,7 +716,7 @@ export function SubmissionForm() {
                       <Button
                         type="button"
                         onClick={addTag}
-                        disabled={!newTag.trim() || tags.length >= 10}
+                        disabled={!newTag.trim() || tags.length >= 8}
                         className="h-12 px-6 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
                       >
                         <Plus className="h-4 w-4" />
