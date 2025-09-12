@@ -876,6 +876,208 @@ export function SubmissionForm() {
                 </div>
               </div>
             </div>
+
+            {/* Images Upload */}
+            <div className="space-y-6">
+              {/* Thumbnail Upload */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-600/10 to-rose-600/10 rounded-2xl blur-xl"></div>
+                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-pink-600 to-rose-600 rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">Project Thumbnail</h3>
+                      <p className="text-gray-600">Main image for your project card</p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+                      dragOver === 'thumbnail'
+                        ? 'border-pink-500 bg-pink-50'
+                        : 'border-gray-300 hover:border-pink-400 hover:bg-pink-50'
+                    }`}
+                    onDragOver={(e) => handleDragOver(e, 'thumbnail')}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, 'thumbnail')}
+                  >
+                    {thumbnailFile ? (
+                      <div className="space-y-4">
+                        <img
+                          src={URL.createObjectURL(thumbnailFile)}
+                          alt="Thumbnail preview"
+                          className="w-32 h-32 object-cover rounded-xl mx-auto border-2 border-pink-200"
+                        />
+                        <div>
+                          <p className="font-medium text-gray-900">{thumbnailFile.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {formatFileSize(thumbnailFile.size)}
+                          </p>
+                          <p className="text-xs text-green-600 mt-1">
+                            ✓ Will be optimized before upload
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setThumbnailFile(null)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="w-16 h-16 bg-pink-100 rounded-xl flex items-center justify-center mx-auto">
+                          <Upload className="h-8 w-8 text-pink-600" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-medium text-gray-900">Upload thumbnail</p>
+                          <p className="text-gray-600">Drag & drop or click to browse</p>
+                          <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 5MB</p>
+                          <p className="text-xs text-green-600 mt-1">Images will be automatically optimized</p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, 'thumbnail');
+                          }}
+                          className="hidden"
+                          id="thumbnail-upload"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('thumbnail-upload')?.click()}
+                          className="border-pink-300 text-pink-700 hover:bg-pink-50"
+                        >
+                          Choose File
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Gallery Upload */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 to-purple-600/10 rounded-2xl blur-xl"></div>
+                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">Gallery Images</h3>
+                      <p className="text-gray-600">Additional screenshots (up to 5)</p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+                      dragOver === 'gallery'
+                        ? 'border-violet-500 bg-violet-50'
+                        : 'border-gray-300 hover:border-violet-400 hover:bg-violet-50'
+                    }`}
+                    onDragOver={(e) => handleDragOver(e, 'gallery')}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, 'gallery')}
+                  >
+                    {galleryFiles.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {galleryFiles.map((file, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Gallery ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-lg border-2 border-violet-200"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeGalleryImage(index)}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        {galleryFiles.length < 5 && (
+                          <div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                files.forEach(file => {
+                                  if (galleryFiles.length < 5) {
+                                    handleFileUpload(file, 'gallery');
+                                  }
+                                });
+                              }}
+                              className="hidden"
+                              id="gallery-upload"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById('gallery-upload')?.click()}
+                              className="border-violet-300 text-violet-700 hover:bg-violet-50"
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add More ({galleryFiles.length}/5)
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="w-16 h-16 bg-violet-100 rounded-xl flex items-center justify-center mx-auto">
+                          <Upload className="h-8 w-8 text-violet-600" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-medium text-gray-900">Upload gallery images</p>
+                          <p className="text-gray-600">Drag & drop or click to browse</p>
+                          <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 5MB each (max 5 images)</p>
+                          <p className="text-xs text-green-600 mt-1">Images will be automatically optimized</p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            files.forEach(file => handleFileUpload(file, 'gallery'));
+                          }}
+                          className="hidden"
+                          id="gallery-upload-initial"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('gallery-upload-initial')?.click()}
+                          className="border-violet-300 text-violet-700 hover:bg-violet-50"
+                        >
+                          Choose Files
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         );
 
