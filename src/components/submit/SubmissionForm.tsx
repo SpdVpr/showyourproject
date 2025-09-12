@@ -41,8 +41,7 @@ export function SubmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [urlMetadata, setUrlMetadata] = useState<any>(null);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
-  const [customThumbnail, setCustomThumbnail] = useState<string>("");
-  const [useCustomThumbnail, setUseCustomThumbnail] = useState(false);
+
 
   const form = useForm<ProjectSubmission>({
     resolver: zodResolver(projectSubmissionSchema),
@@ -181,11 +180,7 @@ export function SubmissionForm() {
         form.setValue('description', metadata.description);
       }
 
-      // Set thumbnail from metadata if available
-      if (metadata.image) {
-        setCustomThumbnail(metadata.image);
-        setUseCustomThumbnail(false); // Use auto-detected by default
-      }
+      // Thumbnail will be automatically used from metadata if available
 
     } catch (error) {
       console.error('Failed to fetch metadata:', error);
@@ -243,9 +238,6 @@ export function SubmissionForm() {
         console.log("Uploading and optimizing thumbnail...");
         const tempProjectId = `temp_${Date.now()}`;
         thumbnailUrl = await uploadProjectThumbnail(thumbnailFile, tempProjectId);
-      } else if (useCustomThumbnail && customThumbnail) {
-        // User provided custom URL
-        thumbnailUrl = customThumbnail;
       } else if (urlMetadata && urlMetadata.image) {
         // Use auto-detected image from metadata
         thumbnailUrl = urlMetadata.image;
@@ -821,103 +813,47 @@ export function SubmissionForm() {
                     </div>
                   </div>
 
-                  {/* Thumbnail Selector - Show when metadata is loaded */}
-                  {urlMetadata && urlMetadata.image && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                      <h4 className="font-medium text-gray-900 mb-3">Choose Thumbnail Source</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            id="auto-thumbnail"
-                            name="thumbnail-choice"
-                            checked={!useCustomThumbnail && !thumbnailFile}
-                            onChange={() => {
-                              setUseCustomThumbnail(false);
-                              setThumbnailFile(null);
-                            }}
-                            className="w-4 h-4 text-blue-600"
-                          />
-                          <label htmlFor="auto-thumbnail" className="flex-1">
-                            <div className="flex items-center space-x-3">
-                              <img
-                                src={urlMetadata.image}
-                                alt="Auto-detected thumbnail"
-                                className="w-16 h-12 object-cover rounded border"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                              <div>
-                                <p className="text-sm font-medium text-gray-900">Use auto-detected image</p>
-                                <p className="text-xs text-gray-500">From website metadata</p>
-                              </div>
-                            </div>
-                          </label>
+                  {/* Auto-detected thumbnail preview */}
+                  {urlMetadata && urlMetadata.image && !thumbnailFile && (
+                    <div className="mb-6 p-4 bg-green-50 rounded-xl border border-green-200">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
                         </div>
-
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            id="custom-thumbnail-url"
-                            name="thumbnail-choice"
-                            checked={useCustomThumbnail}
-                            onChange={() => {
-                              setUseCustomThumbnail(true);
-                              setThumbnailFile(null);
-                            }}
-                            className="w-4 h-4 text-blue-600"
-                          />
-                          <label htmlFor="custom-thumbnail-url" className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">Use custom image URL</p>
-                            <p className="text-xs text-gray-500">Provide your own thumbnail URL</p>
-                          </label>
+                        <div>
+                          <h4 className="font-medium text-green-900">Thumbnail auto-detected!</h4>
+                          <p className="text-sm text-green-700">Using image from website metadata</p>
                         </div>
-
-                        {useCustomThumbnail && (
-                          <div className="ml-7 mt-2">
-                            <input
-                              type="url"
-                              value={customThumbnail}
-                              onChange={(e) => setCustomThumbnail(e.target.value)}
-                              placeholder="https://example.com/your-image.jpg"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            {customThumbnail && (
-                              <img
-                                src={customThumbnail}
-                                alt="Custom thumbnail preview"
-                                className="mt-2 w-16 h-12 object-cover rounded border"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            )}
-                          </div>
-                        )}
-
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="radio"
-                            id="upload-thumbnail"
-                            name="thumbnail-choice"
-                            checked={!!thumbnailFile}
-                            onChange={() => {
-                              setUseCustomThumbnail(false);
-                            }}
-                            className="w-4 h-4 text-blue-600"
-                          />
-                          <label htmlFor="upload-thumbnail" className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">Upload your own image</p>
-                            <p className="text-xs text-gray-500">Drag & drop or select file below</p>
-                          </label>
+                      </div>
+                      <div className="mt-4 space-y-3">
+                        <div>
+                          <p className="text-sm font-medium text-green-900 mb-1">Selected thumbnail</p>
+                          <p className="text-xs text-green-600">This image will be used as your project thumbnail</p>
                         </div>
+                        <div className="w-full">
+                          <img
+                            src={urlMetadata.image}
+                            alt="Auto-detected thumbnail"
+                            className="w-full h-auto max-h-64 object-contain rounded-lg border-2 border-green-300 shadow-sm"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 text-center">You can upload a different image below if needed</p>
                       </div>
                     </div>
                   )}
 
-                  {/* Drag & drop area - always show when no metadata or when upload is selected */}
-                  {(!urlMetadata || thumbnailFile || (urlMetadata && !useCustomThumbnail && !thumbnailFile)) && (
+                  {/* Drag & drop area - always show */}
+                  <div className="space-y-2">
+                    {urlMetadata && urlMetadata.image && !thumbnailFile && (
+                      <p className="text-sm text-gray-600 text-center">
+                        Or upload a different image:
+                      </p>
+                    )}
                     <div
                       className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
                         dragOver === 'thumbnail'
@@ -987,7 +923,7 @@ export function SubmissionForm() {
                         </div>
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
@@ -1135,9 +1071,15 @@ export function SubmissionForm() {
                   <div className="flex items-start space-x-4">
                     {/* Thumbnail Preview */}
                     <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {(useCustomThumbnail && customThumbnail) || (urlMetadata && urlMetadata.image) ? (
+                      {thumbnailFile ? (
                         <img
-                          src={useCustomThumbnail ? customThumbnail : urlMetadata?.image}
+                          src={URL.createObjectURL(thumbnailFile)}
+                          alt="Project thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (urlMetadata && urlMetadata.image) ? (
+                        <img
+                          src={urlMetadata.image}
                           alt="Project thumbnail"
                           className="w-full h-full object-cover"
                           onError={(e) => {
@@ -1210,7 +1152,7 @@ export function SubmissionForm() {
                       <li><strong>Tagline:</strong> {formData.tagline ? "✅ Set" : "❌ Missing"}</li>
                       <li><strong>Description:</strong> {formData.description ? "✅ Set" : "❌ Missing"}</li>
                       <li><strong>Thumbnail:</strong> {
-                        (useCustomThumbnail && customThumbnail) || (urlMetadata && urlMetadata.image) || thumbnailFile
+                        thumbnailFile || (urlMetadata && urlMetadata.image)
                           ? "✅ Set"
                           : "❌ Missing"
                       }</li>
