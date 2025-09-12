@@ -46,7 +46,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               Submit your website for free promotion on ShowYourProject.com. Get discovered by thousands of visitors
-              and earn valuable backlinks to boost your SEO.
+              and earn valuable backlinks to boost your SEO. Now with smart auto-fill from website metadata!
             </motion.p>
 
 

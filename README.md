@@ -4,6 +4,8 @@
 
 A modern, full-featured platform where entrepreneurs can submit their startups and projects for free promotion, quality backlinks, and increased visibility. Built with Next.js 15, React 19, and TypeScript.
 
+🆕 **Latest Update**: Two-step submission form with automatic metadata fetching from websites!
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/showyourproject)
 
 ## ✨ Features
