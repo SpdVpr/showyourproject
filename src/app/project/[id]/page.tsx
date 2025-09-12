@@ -247,7 +247,22 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <br />Timestamp: {new Date().toISOString()}
                 </div>
               )}
-              <ContactProjectOwner project={serializedProject} />
+
+              {/* Force render ContactProjectOwner with error boundary */}
+              <div key={`contact-${project.id}`} className="contact-project-owner-container">
+                <ContactProjectOwner project={serializedProject} />
+              </div>
+
+              {/* Fallback if ContactProjectOwner fails to render */}
+              <noscript>
+                <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                  <p className="text-sm text-blue-800">
+                    <a href="/login" className="text-blue-600 hover:underline">
+                      Sign in to contact the project owner
+                    </a>
+                  </p>
+                </div>
+              </noscript>
             </CardContent>
           </Card>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { messagingService } from "@/lib/firebaseServices";
 import { Button } from "@/components/ui/button";
@@ -22,14 +22,39 @@ export function ContactProjectOwner({ project, onMessageSent }: ContactProjectOw
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
+    const [isHydrated, setIsHydrated] = useState(false);
+    const [authTimeout, setAuthTimeout] = useState(false);
+
+    // Handle hydration
+    useEffect(() => {
+      setIsHydrated(true);
+      console.log('ContactProjectOwner hydrated');
+
+      // Set timeout for auth loading
+      const timer = setTimeout(() => {
+        setAuthTimeout(true);
+        console.log('ContactProjectOwner: Auth timeout reached');
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }, []);
 
     // Debug logging for production troubleshooting
     console.log('ContactProjectOwner render:', {
       user: user ? { id: user.id, displayName: user.displayName } : null,
       project: { id: project.id, submitterId: project.submitterId, name: project.name },
       isOwnProject: user && user.id === project.submitterId,
+      isHydrated,
       timestamp: new Date().toISOString()
     });
+
+    // Don't render anything until hydrated to prevent hydration mismatch
+    if (!isHydrated) {
+      console.log('ContactProjectOwner: Not hydrated yet, showing placeholder');
+      return (
+        <div className="w-full h-10 bg-gray-100 animate-pulse rounded-md"></div>
+      );
+    }
 
     // Don't show contact button for own projects
     if (user && user.id === project.submitterId) {
@@ -37,19 +62,31 @@ export function ContactProjectOwner({ project, onMessageSent }: ContactProjectOw
       return null;
     }
 
-  // Show login prompt if not logged in
+    // Fallback check - if we have issues with user or project data
+    if (!project || !project.id || !project.submitterId) {
+      console.error('ContactProjectOwner: Invalid project data', project);
+      return (
+        <div className="w-full p-2 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-800">
+          Contact feature temporarily unavailable
+        </div>
+      );
+    }
+
+  // Show login prompt if not logged in (with timeout fallback)
   if (!user) {
-    console.log('ContactProjectOwner: Showing login prompt');
+    console.log('ContactProjectOwner: Showing login prompt', { authTimeout });
     return (
       <div className="w-full">
         <div className="p-4 text-center">
           <MessageCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground mb-3">
-            Sign in to contact the project owner
+            {authTimeout ? 'Sign in to contact the project owner' : 'Loading...'}
           </p>
-          <Button variant="outline" asChild>
-            <a href="/login">Sign In</a>
-          </Button>
+          {authTimeout && (
+            <Button variant="outline" asChild>
+              <a href="/login">Sign In</a>
+            </Button>
+          )}
         </div>
       </div>
     );
