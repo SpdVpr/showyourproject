@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO URL Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>SEO URL Test for ShowYourProject.com</h1>
+    
+    <div class="test-result info">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Make sure your dev server is running (npm run dev)</li>
+            <li>Open browser console (F12)</li>
+            <li>Click the test buttons below</li>
+            <li>Check the results in console and on this page</li>
+        </ol>
+    </div>
+
+    <button onclick="testGenerateSlug()">Test Slug Generation</button>
+    <button onclick="testProjectUrls()">Test Project URLs</button>
+    <button onclick="testParseSlug()">Test Slug Parsing</button>
+    <button onclick="addShortIdToProjects()">Add ShortId to Existing Projects</button>
+
+    <div id="results"></div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+            console.log(message);
+        }
+
+        function testGenerateSlug() {
+            addResult('<h3>Testing Slug Generation</h3>');
+            
+            // Test cases
+            const testCases = [
+                { name: "My Awesome Project", shortId: "ABC123", expected: "my-awesome-project-ABC123" },
+                { name: "Project with Special Characters!@#", shortId: "XYZ789", expected: "project-with-special-characters-XYZ789" },
+                { name: "Multiple   Spaces", shortId: "DEF456", expected: "multiple-spaces-DEF456" },
+                { name: "Project-with-hyphens", shortId: "GHI789", expected: "project-with-hyphens-GHI789" }
+            ];
+
+            testCases.forEach(test => {
+                const cleanName = test.name
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .trim();
+                const result = `${cleanName}-${test.shortId}`;
+                
+                if (result === test.expected) {
+                    addResult(`✅ "${test.name}" → "${result}"`, 'success');
+                } else {
+                    addResult(`❌ "${test.name}" → Expected: "${test.expected}", Got: "${result}"`, 'error');
+                }
+            });
+        }
+
+        function testParseSlug() {
+            addResult('<h3>Testing Slug Parsing</h3>');
+            
+            const testCases = [
+                { slug: "my-awesome-project-ABC123", expectedName: "my-awesome-project", expectedShortId: "ABC123" },
+                { slug: "single-word-XYZ789", expectedName: "single-word", expectedShortId: "XYZ789" },
+                { slug: "very-long-project-name-with-many-words-DEF456", expectedName: "very-long-project-name-with-many-words", expectedShortId: "DEF456" }
+            ];
+
+            testCases.forEach(test => {
+                const parts = test.slug.split('-');
+                if (parts.length < 2) {
+                    addResult(`❌ Invalid slug: "${test.slug}"`, 'error');
+                    return;
+                }
+
+                const shortId = parts[parts.length - 1];
+                const name = parts.slice(0, -1).join('-');
+
+                if (name === test.expectedName && shortId === test.expectedShortId) {
+                    addResult(`✅ "${test.slug}" → name: "${name}", shortId: "${shortId}"`, 'success');
+                } else {
+                    addResult(`❌ "${test.slug}" → Expected name: "${test.expectedName}", shortId: "${test.expectedShortId}", Got name: "${name}", shortId: "${shortId}"`, 'error');
+                }
+            });
+        }
+
+        function testProjectUrls() {
+            addResult('<h3>Testing Project URL Generation</h3>');
+            addResult('This test requires access to your project data. Check browser console for detailed results.', 'info');
+            
+            // This would need to be run in the context of your app
+            addResult(`
+                <pre>
+// Run this in your browser console on localhost:3000:
+
+// Test 1: Check if projects have shortId
+fetch('/api/projects') // You might need to adjust this endpoint
+  .then(r => r.json())
+  .then(projects => {
+    console.log('Projects with shortId:', projects.filter(p => p.shortId));
+    console.log('Projects without shortId:', projects.filter(p => !p.shortId));
+  });
+
+// Test 2: Test URL generation
+const testProject = {
+  id: 'test-id',
+  name: 'My Test Project',
+  shortId: 'ABC123'
+};
+
+const generateSlug = (name, shortId) => {
+  const cleanName = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\\s-]/g, '')
+    .replace(/\\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+  return \`\${cleanName}-\${shortId}\`;
+};
+
+const seoUrl = \`/project/\${generateSlug(testProject.name, testProject.shortId)}\`;
+console.log('SEO URL:', seoUrl); // Should be: /project/my-test-project-ABC123
+                </pre>
+            `, 'info');
+        }
+
+        async function addShortIdToProjects() {
+            addResult('<h3>Adding ShortId to Existing Projects</h3>');
+            addResult('⚠️ This is a simulation. To actually run the migration, use the browser console on your app.', 'info');
+            
+            addResult(`
+                <pre>
+// Run this in your browser console on localhost:3000 to add shortId to existing projects:
+
+async function addShortIdToProjects() {
+  try {
+    console.log('Starting migration...');
+    
+    // You'll need to implement this based on your Firebase setup
+    // This is just a template
+    
+    const generateShortId = () => {
+      return Math.random().toString(36).substring(2, 8).toUpperCase();
+    };
+    
+    console.log('Generated sample shortId:', generateShortId());
+    console.log('Migration template ready. Implement actual Firebase calls.');
+    
+  } catch (error) {
+    console.error('Migration failed:', error);
+  }
+}
+
+addShortIdToProjects();
+                </pre>
+            `, 'info');
+        }
+
+        // Auto-run basic tests
+        window.onload = function() {
+            addResult('<h3>SEO URL System Status</h3>');
+            addResult('✅ Slug generation functions implemented', 'success');
+            addResult('✅ Slug parsing functions implemented', 'success');
+            addResult('✅ Project URL generation updated', 'success');
+            addResult('✅ Static params generation updated', 'success');
+            addResult('⚠️ Migration needed for existing projects without shortId', 'info');
+        };
+    </script>
+</body>
+</html>

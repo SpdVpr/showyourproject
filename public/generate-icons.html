@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate PWA Icons</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .icon-item { text-align: center; }
+        button { padding: 10px 20px; margin: 5px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #5a6fd8; }
+    </style>
+</head>
+<body>
+    <h1>PWA Icon Generator for ShowYourProject.com</h1>
+    <p>This tool generates all required PWA icons for the manifest.json</p>
+    
+    <button onclick="generateAllIcons()">Generate All Icons</button>
+    <button onclick="downloadAll()">Download All</button>
+    
+    <div class="icon-grid" id="iconGrid"></div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const canvases = {};
+
+        function createIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(0.5, '#764ba2');
+            gradient.addColorStop(1, '#f093fb');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Add rounded corners
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            const radius = size * 0.15;
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Add logo/text
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Main text
+            const fontSize = size * 0.15;
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.fillText('SYP', size/2, size/2 - fontSize/3);
+            
+            // Subtitle
+            const subtitleSize = size * 0.08;
+            ctx.font = `${subtitleSize}px Arial`;
+            ctx.fillText('ShowYourProject', size/2, size/2 + fontSize/2);
+
+            // Add shine effect
+            const shineGradient = ctx.createLinearGradient(0, 0, size, size/2);
+            shineGradient.addColorStop(0, 'rgba(255,255,255,0.3)');
+            shineGradient.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = shineGradient;
+            ctx.fillRect(0, 0, size, size/2);
+
+            return canvas;
+        }
+
+        function generateAllIcons() {
+            const grid = document.getElementById('iconGrid');
+            grid.innerHTML = '';
+
+            sizes.forEach(size => {
+                const canvas = createIcon(size);
+                canvases[size] = canvas;
+
+                const container = document.createElement('div');
+                container.className = 'icon-item';
+                
+                const title = document.createElement('h3');
+                title.textContent = `${size}x${size}`;
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = 'Download';
+                downloadBtn.onclick = () => downloadIcon(size);
+                
+                container.appendChild(title);
+                container.appendChild(canvas);
+                container.appendChild(downloadBtn);
+                grid.appendChild(container);
+            });
+        }
+
+        function downloadIcon(size) {
+            const canvas = canvases[size];
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function downloadAll() {
+            sizes.forEach(size => {
+                setTimeout(() => downloadIcon(size), size * 10); // Stagger downloads
+            });
+        }
+
+        // Add roundRect polyfill for older browsers
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+
+        // Generate icons on page load
+        window.onload = generateAllIcons;
+    </script>
+</body>
+</html>
