@@ -173,8 +173,21 @@ SMTP_CONFIG=...
 
 ### Vercel (Recommended)
 1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
+2. Set environment variables in Vercel dashboard:
+   ```
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   ADMIN_EMAIL=your_admin_email@example.com
+   ```
 3. Deploy automatically on push to main
+
+**⚠️ Important**: Never commit `.env.local` or any files containing sensitive credentials to GitHub. All environment variables should be configured directly in Vercel's dashboard.
 
 ### Manual Deployment
 ```bash
