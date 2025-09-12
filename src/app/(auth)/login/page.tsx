@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { Github, Mail, Shield, Info, Eye, EyeOff } from "lucide-react";
+import { Mail, Eye, EyeOff } from "lucide-react";
 
 // Google Icon Component
 const GoogleIcon = () => (
@@ -28,7 +28,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { signIn, signInWithGoogle, signInWithGithub } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/dashboard";
@@ -81,19 +81,7 @@ function LoginForm() {
     }
   };
 
-  const handleGithubSignIn = async () => {
-    setLoading(true);
-    setError("");
 
-    try {
-      await signInWithGithub();
-      router.push(redirectTo);
-    } catch (error: any) {
-      setError(error.message || "Failed to sign in with GitHub");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4">
@@ -106,23 +94,6 @@ function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Admin Demo Info */}
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Demo Credentials:</strong><br />
-              Admin: admin@showyourproject.com / admin123<br />
-              User: any email / any password
-            </AlertDescription>
-          </Alert>
-
-          {/* OAuth Info */}
-          <Alert className="border-blue-200 bg-blue-50">
-            <Info className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
-              <strong>Google Login:</strong> If Google asks for verification, click "Advanced" → "Go to ShowYourProject.com (unsafe)" to continue.
-            </AlertDescription>
-          </Alert>
 
           {error && (
             <Alert variant="destructive">
@@ -186,24 +157,15 @@ function LoginForm() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              variant="outline"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-            >
-              <GoogleIcon />
-              <span className="ml-2">Google</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleGithubSignIn}
-              disabled={loading}
-            >
-              <Github className="mr-2 h-4 w-4" />
-              GitHub
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="w-full"
+          >
+            <GoogleIcon />
+            <span className="ml-2">Continue with Google</span>
+          </Button>
 
           <div className="text-center text-sm">
             Don't have an account?{" "}
@@ -212,29 +174,7 @@ function LoginForm() {
             </Link>
           </div>
 
-          {/* Quick Admin Access */}
-          <div className="pt-4 border-t">
-            <div className="text-center mb-3">
-              <div className="flex items-center justify-center space-x-2 text-sm font-medium text-blue-600">
-                <Shield className="h-4 w-4" />
-                <span>Quick Admin Access</span>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setEmail("admin@showyourproject.com");
-                setPassword("admin123");
-              }}
-            >
-              <Shield className="h-4 w-4 mr-2" />
-              Fill Admin Credentials
-            </Button>
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              Click to auto-fill admin login credentials for demo
-            </p>
-          </div>
+
         </CardContent>
         </Card>
       </div>
