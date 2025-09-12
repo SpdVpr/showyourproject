@@ -78,7 +78,13 @@ export function FeaturedProjects() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className={`grid gap-6 mb-8 ${
+              currentProjects.length === 1
+                ? 'grid-cols-1 max-w-sm mx-auto'
+                : currentProjects.length === 2
+                  ? 'grid-cols-1 lg:grid-cols-2 max-w-2xl mx-auto'
+                  : 'grid-cols-1 lg:grid-cols-3'
+            }`}>
               {currentProjects.map((project, index) => (
                 <motion.div
                   key={`${project.id}-${currentPage}`}
