@@ -1084,69 +1084,177 @@ export function SubmissionForm() {
               </p>
             </div>
 
-            {/* Project Preview Card */}
+            {/* Realistic Project Preview */}
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl blur-xl"></div>
               <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
-                <h4 className="text-lg font-semibold text-gray-900 mb-6">Project Preview</h4>
+                <h4 className="text-lg font-semibold text-gray-900 mb-6 text-center">
+                  🎯 How your project will look on the website
+                </h4>
 
-                {/* Project Card Preview */}
-                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                  <div className="flex items-start space-x-4">
-                    {/* Thumbnail Preview */}
-                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {thumbnailFile ? (
-                        <img
-                          src={URL.createObjectURL(thumbnailFile)}
-                          alt="Project thumbnail"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (urlMetadata && urlMetadata.image) ? (
-                        <img
-                          src={urlMetadata.image}
-                          alt="Project thumbnail"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      )}
-                    </div>
+                {/* Realistic Project Detail Page Preview */}
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 max-w-5xl mx-auto">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Main Content Column */}
+                    <div className="lg:col-span-2 space-y-4">
+                      {/* Project Header Card */}
+                      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                        <div className="text-center space-y-4">
+                          <div>
+                            <h1 className="text-2xl font-bold mb-2 text-gray-900">
+                              {formData.name || "Your Project Name"}
+                            </h1>
+                            <p className="text-lg text-gray-600 mb-3">
+                              {formData.tagline || "Your project tagline will appear here"}
+                            </p>
 
-                    {/* Project Info */}
-                    <div className="flex-1 min-w-0">
-                      <h5 className="font-semibold text-gray-900 truncate">
-                        {formData.name || "Project Name"}
-                      </h5>
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {formData.tagline || "Project tagline will appear here"}
-                      </p>
-                      <div className="flex items-center space-x-4 mt-3">
-                        <div className="flex items-center space-x-1">
-                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                          </svg>
-                          <span className="text-sm text-gray-500">0</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          <span className="text-sm text-gray-500">0</span>
+                            <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 mb-4">
+                              <span className="flex items-center">
+                                <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Launched Today
+                              </span>
+                              <span className="flex items-center">
+                                <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                By You
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-center space-x-2">
+                              <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                                {formData.category || "Category"}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="mt-3">
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                          Visit Website
-                        </button>
+
+                      {/* Project Gallery Preview */}
+                      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
+                          {thumbnailFile ? (
+                            <img
+                              src={URL.createObjectURL(thumbnailFile)}
+                              alt="Project preview"
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (urlMetadata && urlMetadata.image) ? (
+                            <img
+                              src={urlMetadata.image}
+                              alt="Project preview"
+                              className="w-full h-full object-contain"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="text-center text-gray-500">
+                              <svg className="w-16 h-16 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              <p className="text-sm">Your project screenshot will appear here</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Project Description Preview */}
+                      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                          About {formData.name || "Your Project"}
+                        </h3>
+                        <div className="prose prose-gray max-w-none">
+                          <div className="html-content text-gray-600 leading-relaxed">
+                            {formData.description ? (
+                              <div dangerouslySetInnerHTML={{ __html: formData.description }} />
+                            ) : (
+                              <p className="text-gray-500 italic">Your detailed project description will appear here...</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tags Preview */}
+                      <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center mb-4">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                          Tags
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {tags.length > 0 ? (
+                            tags.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm"
+                              >
+                                {tag}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500 italic text-sm">Your project tags will appear here...</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sidebar Preview */}
+                    <div className="space-y-4">
+                      {/* Visit Website Button */}
+                      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                        <div className="space-y-4">
+                          <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            Visit Website
+                          </button>
+
+                          <div className="flex space-x-2">
+                            <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                              </svg>
+                              Like
+                            </button>
+                            <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                              </svg>
+                              Share
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Project Stats */}
+                      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                        <h4 className="font-semibold text-gray-900 mb-4">Project Stats</h4>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Views</span>
+                            <span className="font-medium">0</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Likes</span>
+                            <span className="font-medium">0</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Clicks</span>
+                            <span className="font-medium">0</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-gray-500">
+                    ✨ This is exactly how your project will appear to visitors on showyourproject.com
+                  </p>
                 </div>
               </div>
             </div>
