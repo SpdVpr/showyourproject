@@ -19,13 +19,15 @@ import {
   Edit,
   Star,
   Trash2,
-  Share2
+  Share2,
+  Image as ImageIcon
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Project } from "@/types";
 import { projectService, adminService } from "@/lib/firebaseServices";
 import { invalidateCache } from "@/lib/cache";
+import { ProjectImageEditor } from "./ProjectImageEditor";
 
 interface AdminProjectReviewProps {
   projects: Project[];
@@ -43,6 +45,7 @@ export function AdminProjectReview({ projects, onProjectUpdate, isApprovedView =
   const [isTogglingFeatured, setIsTogglingFeatured] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isEditingImages, setIsEditingImages] = useState(false);
 
 
   // Helper function to format dates
@@ -207,6 +210,35 @@ export function AdminProjectReview({ projects, onProjectUpdate, isApprovedView =
     } catch (error) {
       console.error("Error updating project:", error);
       alert("Failed to update project. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSaveImages = async (imageUpdates: Partial<Project>) => {
+    if (!selectedProject) return;
+
+    setIsProcessing(true);
+
+    try {
+      console.log("Updating project images:", selectedProject.id, "Changes:", imageUpdates);
+
+      // Use real Firebase service to update project images
+      await projectService.updateProject(selectedProject.id, imageUpdates);
+
+      alert(`Images for "${selectedProject.name}" have been updated!`);
+
+      // Reset form and refresh projects list
+      setSelectedProject(null);
+      setIsEditingImages(false);
+
+      // Trigger parent component to refresh projects
+      if (onProjectUpdate) {
+        onProjectUpdate();
+      }
+    } catch (error) {
+      console.error("Error updating project images:", error);
+      alert("Failed to update project images. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -471,6 +503,16 @@ export function AdminProjectReview({ projects, onProjectUpdate, isApprovedView =
                       </Button>
 
                       <Button
+                        onClick={() => setIsEditingImages(true)}
+                        disabled={isProcessing}
+                        variant="outline"
+                        className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                      >
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        Edit Images
+                      </Button>
+
+                      <Button
                         onClick={() => handleToggleFeatured(selectedProject)}
                         disabled={isProcessing}
                         variant={selectedProject.featured ? "destructive" : "default"}
@@ -536,6 +578,7 @@ export function AdminProjectReview({ projects, onProjectUpdate, isApprovedView =
                       setIsEditing(false);
                       setEditedProject({});
                       setShowDeleteConfirm(false);
+                      setIsEditingImages(false);
                     }}
                   >
                     Cancel
@@ -639,6 +682,19 @@ export function AdminProjectReview({ projects, onProjectUpdate, isApprovedView =
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Image Editor Dialog */}
+      {isEditingImages && selectedProject && (
+        <ProjectImageEditor
+          project={selectedProject}
+          onSave={handleSaveImages}
+          onCancel={() => {
+            setIsEditingImages(false);
+            setSelectedProject(null);
+          }}
+          isProcessing={isProcessing}
+        />
       )}
     </div>
   );
