@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
-import { Plus, BarChart3, Eye, ExternalLink, Heart, Clock, CheckCircle, XCircle, AlertCircle, Coins, MessageCircle } from "lucide-react";
+import { Plus, BarChart3, Eye, ExternalLink, Heart, Clock, CheckCircle, XCircle, AlertCircle, Coins, MessageCircle, TrendingUp, Trophy, Star, Info } from "lucide-react";
 import { PointsSystem } from "@/components/dashboard/PointsSystem";
 import { MessagingDashboard } from "@/components/messaging/MessagingDashboard";
 import { projectService, userService } from "@/lib/firebaseServices";
@@ -169,8 +169,90 @@ export default function DashboardPage() {
 
         <TabsContent value="overview" className="space-y-6">
 
+          {/* Featured Promotion Banner */}
+          <Card className="bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 text-white border-0 shadow-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-white/20 rounded-lg">
+                      <Coins className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">Get Featured & Boost Your Project!</h3>
+                      <p className="text-white/90">Use your points to feature your project on the homepage</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <Eye className="h-4 w-4" />
+                        <span className="font-semibold">More Visibility</span>
+                      </div>
+                      <p className="text-sm text-white/80">Featured on homepage for 14 days</p>
+                    </div>
+
+                    <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <TrendingUp className="h-4 w-4" />
+                        <span className="font-semibold">Higher Rankings</span>
+                      </div>
+                      <p className="text-sm text-white/80">Priority placement in listings</p>
+                    </div>
+
+                    <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <Trophy className="h-4 w-4" />
+                        <span className="font-semibold">Premium Badge</span>
+                      </div>
+                      <p className="text-sm text-white/80">Special featured project badge</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-white/20 rounded-lg px-3 py-2">
+                        <div className="flex items-center space-x-2">
+                          <Coins className="h-4 w-4" />
+                          <span className="font-bold">{user?.points || 0} points</span>
+                        </div>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-white/80">Featured costs: </span>
+                        <span className="font-bold">500 points</span>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-3">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setActiveTab("points")}
+                        className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                      >
+                        <Info className="h-4 w-4 mr-2" />
+                        Learn More
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setActiveTab("points")}
+                        className="bg-white text-purple-600 hover:bg-white/90 font-semibold"
+                        disabled={(user?.points || 0) < 500}
+                      >
+                        <Star className="h-4 w-4 mr-2" />
+                        {(user?.points || 0) >= 500 ? 'Feature Project' : 'Earn More Points'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
@@ -219,6 +301,19 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold">{totalVotes}</div>
                 <p className="text-xs text-muted-foreground">
                   Votes received
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-purple-900">Your Points</CardTitle>
+                <Coins className="h-4 w-4 text-purple-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-900">{user?.points || 0}</div>
+                <p className="text-xs text-purple-700">
+                  {(user?.points || 0) >= 500 ? 'Ready to feature!' : `${500 - (user?.points || 0)} more needed`}
                 </p>
               </CardContent>
             </Card>
@@ -271,13 +366,39 @@ export default function DashboardPage() {
               )}
 
               {userProjects.length > 0 && (
-                <div className="mt-6 text-center">
-                  <Button asChild>
-                    <Link href="/submit">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Submit New Project
-                    </Link>
-                  </Button>
+                <div className="mt-6 space-y-4">
+                  {/* Points Earning Tip */}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Coins className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-green-900">💡 Earn Points with Every Interaction!</h4>
+                        <p className="text-sm text-green-700 mt-1">
+                          Get <strong>+10 points</strong> for each like, <strong>+5 points</strong> for each click, and <strong>+2 points</strong> for each view.
+                          Share your projects to earn more points and feature them on the homepage!
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setActiveTab("points")}
+                        className="border-green-300 text-green-700 hover:bg-green-100"
+                      >
+                        View Points
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <Button asChild>
+                      <Link href="/submit">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Submit New Project
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
