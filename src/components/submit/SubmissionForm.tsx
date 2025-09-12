@@ -460,81 +460,7 @@ export function SubmissionForm() {
                   </motion.div>
                 )}
 
-                {/* Thumbnail Selector */}
-                {urlMetadata && urlMetadata.image && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200"
-                  >
-                    <h4 className="font-medium text-gray-900 mb-3">Project Thumbnail</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="radio"
-                          id="auto-thumbnail"
-                          name="thumbnail-choice"
-                          checked={!useCustomThumbnail}
-                          onChange={() => setUseCustomThumbnail(false)}
-                          className="w-4 h-4 text-blue-600"
-                        />
-                        <label htmlFor="auto-thumbnail" className="flex-1">
-                          <div className="flex items-center space-x-3">
-                            <img
-                              src={urlMetadata.image}
-                              alt="Auto-detected thumbnail"
-                              className="w-16 h-12 object-cover rounded border"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">Use auto-detected image</p>
-                              <p className="text-xs text-gray-500">From website metadata</p>
-                            </div>
-                          </div>
-                        </label>
-                      </div>
 
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="radio"
-                          id="custom-thumbnail"
-                          name="thumbnail-choice"
-                          checked={useCustomThumbnail}
-                          onChange={() => setUseCustomThumbnail(true)}
-                          className="w-4 h-4 text-blue-600"
-                        />
-                        <label htmlFor="custom-thumbnail" className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Use custom image URL</p>
-                          <p className="text-xs text-gray-500">Provide your own thumbnail</p>
-                        </label>
-                      </div>
-
-                      {useCustomThumbnail && (
-                        <div className="ml-7 mt-2">
-                          <input
-                            type="url"
-                            value={customThumbnail}
-                            onChange={(e) => setCustomThumbnail(e.target.value)}
-                            placeholder="https://example.com/your-image.jpg"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                          {customThumbnail && (
-                            <img
-                              src={customThumbnail}
-                              alt="Custom thumbnail preview"
-                              className="mt-2 w-16 h-12 object-cover rounded border"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
               </div>
             </div>
 
@@ -895,75 +821,173 @@ export function SubmissionForm() {
                     </div>
                   </div>
 
-                  <div
-                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
-                      dragOver === 'thumbnail'
-                        ? 'border-pink-500 bg-pink-50'
-                        : 'border-gray-300 hover:border-pink-400 hover:bg-pink-50'
-                    }`}
-                    onDragOver={(e) => handleDragOver(e, 'thumbnail')}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, 'thumbnail')}
-                  >
-                    {thumbnailFile ? (
-                      <div className="space-y-4">
-                        <img
-                          src={URL.createObjectURL(thumbnailFile)}
-                          alt="Thumbnail preview"
-                          className="w-32 h-32 object-cover rounded-xl mx-auto border-2 border-pink-200"
-                        />
-                        <div>
-                          <p className="font-medium text-gray-900">{thumbnailFile.name}</p>
-                          <p className="text-sm text-gray-500">
-                            {formatFileSize(thumbnailFile.size)}
-                          </p>
-                          <p className="text-xs text-green-600 mt-1">
-                            ✓ Will be optimized before upload
-                          </p>
+                  {/* Thumbnail Selector - Show when metadata is loaded */}
+                  {urlMetadata && urlMetadata.image && (
+                    <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                      <h4 className="font-medium text-gray-900 mb-3">Choose Thumbnail Source</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="radio"
+                            id="auto-thumbnail"
+                            name="thumbnail-choice"
+                            checked={!useCustomThumbnail && !thumbnailFile}
+                            onChange={() => {
+                              setUseCustomThumbnail(false);
+                              setThumbnailFile(null);
+                            }}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <label htmlFor="auto-thumbnail" className="flex-1">
+                            <div className="flex items-center space-x-3">
+                              <img
+                                src={urlMetadata.image}
+                                alt="Auto-detected thumbnail"
+                                className="w-16 h-12 object-cover rounded border"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">Use auto-detected image</p>
+                                <p className="text-xs text-gray-500">From website metadata</p>
+                              </div>
+                            </div>
+                          </label>
                         </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setThumbnailFile(null)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          Remove
-                        </Button>
+
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="radio"
+                            id="custom-thumbnail-url"
+                            name="thumbnail-choice"
+                            checked={useCustomThumbnail}
+                            onChange={() => {
+                              setUseCustomThumbnail(true);
+                              setThumbnailFile(null);
+                            }}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <label htmlFor="custom-thumbnail-url" className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">Use custom image URL</p>
+                            <p className="text-xs text-gray-500">Provide your own thumbnail URL</p>
+                          </label>
+                        </div>
+
+                        {useCustomThumbnail && (
+                          <div className="ml-7 mt-2">
+                            <input
+                              type="url"
+                              value={customThumbnail}
+                              onChange={(e) => setCustomThumbnail(e.target.value)}
+                              placeholder="https://example.com/your-image.jpg"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {customThumbnail && (
+                              <img
+                                src={customThumbnail}
+                                alt="Custom thumbnail preview"
+                                className="mt-2 w-16 h-12 object-cover rounded border"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="radio"
+                            id="upload-thumbnail"
+                            name="thumbnail-choice"
+                            checked={!!thumbnailFile}
+                            onChange={() => {
+                              setUseCustomThumbnail(false);
+                            }}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <label htmlFor="upload-thumbnail" className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">Upload your own image</p>
+                            <p className="text-xs text-gray-500">Drag & drop or select file below</p>
+                          </label>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="w-16 h-16 bg-pink-100 rounded-xl flex items-center justify-center mx-auto">
-                          <Upload className="h-8 w-8 text-pink-600" />
+                    </div>
+                  )}
+
+                  {/* Drag & drop area - always show when no metadata or when upload is selected */}
+                  {(!urlMetadata || thumbnailFile || (urlMetadata && !useCustomThumbnail && !thumbnailFile)) && (
+                    <div
+                      className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+                        dragOver === 'thumbnail'
+                          ? 'border-pink-500 bg-pink-50'
+                          : 'border-gray-300 hover:border-pink-400 hover:bg-pink-50'
+                      }`}
+                      onDragOver={(e) => handleDragOver(e, 'thumbnail')}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, 'thumbnail')}
+                    >
+                      {thumbnailFile ? (
+                        <div className="space-y-4">
+                          <img
+                            src={URL.createObjectURL(thumbnailFile)}
+                            alt="Thumbnail preview"
+                            className="w-32 h-32 object-cover rounded-xl mx-auto border-2 border-pink-200"
+                          />
+                          <div>
+                            <p className="font-medium text-gray-900">{thumbnailFile.name}</p>
+                            <p className="text-sm text-gray-500">
+                              {formatFileSize(thumbnailFile.size)}
+                            </p>
+                            <p className="text-xs text-green-600 mt-1">
+                              ✓ Will be optimized before upload
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setThumbnailFile(null)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Remove
+                          </Button>
                         </div>
-                        <div>
-                          <p className="text-lg font-medium text-gray-900">Upload thumbnail</p>
-                          <p className="text-gray-600">Drag & drop or click to browse</p>
-                          <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 5MB</p>
-                          <p className="text-xs text-green-600 mt-1">Images will be automatically optimized</p>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="w-16 h-16 bg-pink-100 rounded-xl flex items-center justify-center mx-auto">
+                            <Upload className="h-8 w-8 text-pink-600" />
+                          </div>
+                          <div>
+                            <p className="text-lg font-medium text-gray-900">Upload thumbnail</p>
+                            <p className="text-gray-600">Drag & drop or click to browse</p>
+                            <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 5MB</p>
+                            <p className="text-xs text-green-600 mt-1">Images will be automatically optimized</p>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file, 'thumbnail');
+                            }}
+                            className="hidden"
+                            id="thumbnail-upload"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('thumbnail-upload')?.click()}
+                            className="border-pink-300 text-pink-700 hover:bg-pink-50"
+                          >
+                            Choose File
+                          </Button>
                         </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(file, 'thumbnail');
-                          }}
-                          className="hidden"
-                          id="thumbnail-upload"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('thumbnail-upload')?.click()}
-                          className="border-pink-300 text-pink-700 hover:bg-pink-50"
-                        >
-                          Choose File
-                        </Button>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
