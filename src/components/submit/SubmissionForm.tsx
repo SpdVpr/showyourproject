@@ -1098,10 +1098,8 @@ export function SubmissionForm() {
                 </h4>
 
                 {/* Realistic Project Detail Page Preview */}
-                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 max-w-5xl mx-auto">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Main Content Column */}
-                    <div className="lg:col-span-2 space-y-4">
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 max-w-4xl mx-auto">
+                  <div className="space-y-4">
                       {/* Project Header Card */}
                       <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
                         <div className="text-center space-y-4">
@@ -1204,56 +1202,6 @@ export function SubmissionForm() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Sidebar Preview */}
-                    <div className="space-y-4">
-                      {/* Visit Website Button */}
-                      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                        <div className="space-y-4">
-                          <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                            Visit Website
-                          </button>
-
-                          <div className="flex space-x-2">
-                            <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center">
-                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                              </svg>
-                              Like
-                            </button>
-                            <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center">
-                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                              </svg>
-                              Share
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Project Stats */}
-                      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                        <h4 className="font-semibold text-gray-900 mb-4">Project Stats</h4>
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Views</span>
-                            <span className="font-medium">0</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Likes</span>
-                            <span className="font-medium">0</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Clicks</span>
-                            <span className="font-medium">0</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="mt-6 text-center">
@@ -1398,10 +1346,19 @@ export function SubmissionForm() {
                 <Button
                   type="button"
                   onClick={handleSubmit(
-                    onSubmit,
+                    (data) => {
+                      // Add tags to form data before validation
+                      const dataWithTags = { ...data, tags };
+                      console.log("Form data with tags:", dataWithTags);
+                      onSubmit(dataWithTags);
+                    },
                     (errors) => {
                       console.log("Form validation failed:", errors);
-                      alert("Please fill in all required fields correctly.");
+                      // Show specific error messages
+                      const errorMessages = Object.entries(errors).map(([field, error]) => {
+                        return `${field}: ${error?.message || 'Invalid'}`;
+                      }).join('\n');
+                      alert(`Please fix the following errors:\n\n${errorMessages}`);
                     }
                   )}
                   disabled={isSubmitting}
