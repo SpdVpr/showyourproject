@@ -13,6 +13,7 @@ import { AdminStats } from "@/components/admin/AdminStats";
 import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
 import { AdminSocialMediaSettings } from "@/components/admin/AdminSocialMediaSettings";
 import { AdminMessaging } from "@/components/admin/AdminMessaging";
+import { AdminSettings } from "@/components/admin/AdminSettings";
 import Link from "next/link";
 import { Shield, Users, FileText, BarChart3, Settings, AlertTriangle, Search, Star, MessageCircle, Clock } from "lucide-react";
 
@@ -843,23 +844,7 @@ export default function AdminPage() {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Platform Settings</CardTitle>
-              <CardDescription>
-                Configure platform-wide settings and preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12">
-                <Settings className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Settings Panel</h3>
-                <p className="text-muted-foreground">
-                  Platform settings will be available in the next update
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <AdminSettings />
         </TabsContent>
 
         <TabsContent value="social" className="space-y-6">

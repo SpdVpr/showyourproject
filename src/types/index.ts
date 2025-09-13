@@ -99,6 +99,7 @@ export interface Project {
   submitterEmail: string; // for notifications
   submitterName: string;
   status: 'pending' | 'approved' | 'rejected';
+  autoApproved?: boolean; // Whether project was auto-approved
   voteCount: number;
   viewCount: number;
   clickCount: number;

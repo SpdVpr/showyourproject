@@ -231,6 +231,16 @@ export const projectService = {
 
   // Submit new project
   async submitProject(projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) {
+    // Check for duplicate URL
+    const isDuplicate = await adminSettingsService.checkDuplicateUrl(projectData.url);
+    if (isDuplicate) {
+      throw new Error('A project with this URL already exists. Please use a different URL.');
+    }
+
+    // Get admin settings to check auto-approval
+    const adminSettings = await adminSettingsService.getSettings();
+    const autoApprove = adminSettings.autoApproveProjects || false;
+
     const projectsRef = collection(db, 'projects');
     const shortId = this.generateShortId();
 
@@ -239,11 +249,19 @@ export const projectService = {
       shortId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
+      submittedAt: serverTimestamp(),
+      status: autoApprove ? 'approved' : 'pending',
+      voteCount: 0,
+      viewCount: 0,
+      clickCount: 0,
+      featured: false,
+      autoApproved: autoApprove
     });
 
     // Invalidate relevant caches since a new project was added
     invalidateCache('projects');
     invalidateCache('pending');
+    console.log(`Project submitted with status: ${autoApprove ? 'approved' : 'pending'}`);
     console.log('Cache invalidated after project submission');
 
     return docRef.id;
@@ -953,6 +971,76 @@ export const pointsService = {
       return snapshot.docs.length;
     } catch (error) {
       console.error('Error cleaning up expired slots:', error);
+      throw error;
+    }
+  }
+};
+
+// Admin Settings Services
+export const adminSettingsService = {
+  // Get admin settings
+  async getSettings() {
+    try {
+      const settingsRef = doc(db, 'admin', 'settings');
+      const settingsDoc = await getDoc(settingsRef);
+
+      if (settingsDoc.exists()) {
+        return settingsDoc.data();
+      } else {
+        // Return default settings if none exist
+        const defaultSettings = {
+          autoApproveProjects: false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+        await setDoc(settingsRef, defaultSettings);
+        return defaultSettings;
+      }
+    } catch (error) {
+      console.error('Error getting admin settings:', error);
+      throw error;
+    }
+  },
+
+  // Update admin settings
+  async updateSettings(settings: any) {
+    try {
+      const settingsRef = doc(db, 'admin', 'settings');
+      await setDoc(settingsRef, {
+        ...settings,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      console.log('Admin settings updated:', settings);
+    } catch (error) {
+      console.error('Error updating admin settings:', error);
+      throw error;
+    }
+  },
+
+  // Check if URL already exists
+  async checkDuplicateUrl(url: string, excludeProjectId?: string) {
+    try {
+      // Normalize URL for comparison
+      const normalizedUrl = url.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+      const projectsRef = collection(db, 'projects');
+      const q = query(projectsRef);
+      const snapshot = await getDocs(q);
+
+      const duplicates = snapshot.docs.filter(doc => {
+        const project = doc.data();
+        if (excludeProjectId && doc.id === excludeProjectId) {
+          return false; // Exclude current project when editing
+        }
+
+        const projectUrl = project.url?.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '') || '';
+        return projectUrl === normalizedUrl;
+      });
+
+      return duplicates.length > 0;
+    } catch (error) {
+      console.error('Error checking duplicate URL:', error);
       throw error;
     }
   }

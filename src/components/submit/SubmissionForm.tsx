@@ -304,7 +304,7 @@ export function SubmissionForm() {
 
       // Submit to Firebase
       const projectId = await projectService.submitProject(projectData);
-      
+
       console.log("Project submitted with ID:", projectId);
 
       // Invalidate cache on client-side to ensure fresh data
@@ -312,7 +312,13 @@ export function SubmissionForm() {
       invalidateCache('new_projects');
       invalidateCache('pending');
 
-      alert("🎉 Project submitted successfully! We'll review it within 24 hours and notify you via email.");
+      // Check if project was auto-approved or needs review
+      const autoApproved = projectData.status === 'approved';
+      const message = autoApproved
+        ? "🎉 Project submitted and published successfully! Your project is now live on ShowYourProject.com."
+        : "🎉 Project submitted successfully! We'll review it within 24 hours and notify you via email.";
+
+      alert(message);
 
       // Reset form
       form.reset();
@@ -327,9 +333,17 @@ export function SubmissionForm() {
         router.push('/');
       }, 2000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting project:", error);
-      alert("❌ Failed to submit project. Please try again.");
+
+      // Handle specific error types
+      if (error.message && error.message.includes('duplicate URL')) {
+        alert("❌ A project with this URL already exists. Please use a different website URL.");
+      } else if (error.message && error.message.includes('URL already exists')) {
+        alert("❌ A project with this URL already exists. Please use a different website URL.");
+      } else {
+        alert("❌ Failed to submit project. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }

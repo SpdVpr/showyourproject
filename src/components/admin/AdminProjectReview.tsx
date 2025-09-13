@@ -327,6 +327,11 @@ export function AdminProjectReview({ projects, onProjectUpdate, isApprovedView =
                     <div className="flex items-center space-x-2 mb-1">
                       <h3 className="font-semibold text-lg">{project.name}</h3>
                       <Badge variant="secondary">{project.category}</Badge>
+                      {project.autoApproved && (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          Auto-Approved
+                        </Badge>
+                      )}
                     </div>
                     
                     <p className="text-muted-foreground text-sm mb-2">
