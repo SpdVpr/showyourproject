@@ -98,7 +98,7 @@ export default function PrivacyPage() {
                 If you have any questions about this Privacy Policy, please contact us at:
               </p>
               <p>
-                <strong>Email:</strong> support@showyourproject.com
+                <strong>Email:</strong> admin@showyourproject.com
               </p>
             </CardContent>
           </Card>

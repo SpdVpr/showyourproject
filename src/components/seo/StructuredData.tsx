@@ -57,7 +57,7 @@ export function StructuredData({ type = 'website', data }: StructuredDataProps) 
           "contactPoint": {
             "@type": "ContactPoint",
             "contactType": "customer service",
-            "email": "support@showyourproject.com"
+            "email": "admin@showyourproject.com"
           }
         };
 

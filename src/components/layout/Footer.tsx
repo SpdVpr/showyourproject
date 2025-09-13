@@ -34,7 +34,7 @@ export function Footer() {
                 <Github className="h-5 w-5" />
               </Link>
               <Link
-                href="mailto:support@showyourproject.com"
+                href="mailto:admin@showyourproject.com"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Mail className="h-5 w-5" />

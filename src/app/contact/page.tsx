@@ -82,7 +82,7 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <h4 className="font-semibold">Email</h4>
-                    <p className="text-muted-foreground">support@showyourproject.com</p>
+                    <p className="text-muted-foreground">admin@showyourproject.com</p>
                     <p className="text-sm text-muted-foreground">We'll respond within 24 hours</p>
                   </div>
                 </div>
@@ -132,7 +132,7 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  <strong>All Inquiries:</strong> support@showyourproject.com
+                  <strong>All Inquiries:</strong> admin@showyourproject.com
                 </p>
                 <p className="text-sm text-muted-foreground">
                   For general questions, technical support, partnerships, press inquiries, and all other matters, please use our main support email address.
