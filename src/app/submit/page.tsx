@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { SubmissionForm } from "@/components/submit/SubmissionForm";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import Link from "next/link";
-import { Plus, CheckCircle, Clock, Zap } from "lucide-react";
+import { Plus, CheckCircle, Clock, Zap, Mail, Shield } from "lucide-react";
 
 export default function SubmitPage() {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export default function SubmitPage() {
           <p className="text-muted-foreground mb-8">
             Join thousands of entrepreneurs showcasing their projects to the world
           </p>
-          
+
           <Card className="p-8">
             <CardContent className="space-y-6">
               <div className="text-center">
@@ -28,13 +29,63 @@ export default function SubmitPage() {
                   Sign in to submit your project on ShowYourProject.com and start getting traffic and backlinks
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild>
                   <Link href="/login">Sign In</Link>
                 </Button>
                 <Button variant="outline" asChild>
                   <Link href="/register">Create Account</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Show email verification requirement for unverified users
+  if (!user.emailVerified) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-4 text-center">Submit Your Project</h1>
+          <p className="text-muted-foreground mb-8 text-center">
+            Join thousands of entrepreneurs showcasing their projects to the world
+          </p>
+
+          {/* Email Verification Banner */}
+          <EmailVerificationBanner />
+
+          <Card className="p-8">
+            <CardContent className="space-y-6">
+              <div className="text-center">
+                <Shield className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                <h2 className="text-xl font-semibold mb-2">Email Verification Required</h2>
+                <p className="text-muted-foreground mb-6">
+                  To maintain quality and prevent spam, you must verify your email address before submitting projects.
+                </p>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <Mail className="h-5 w-5 text-orange-600 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-orange-800 mb-1">Why verify your email?</h3>
+                    <ul className="text-sm text-orange-700 space-y-1">
+                      <li>• Ensures you receive important notifications about your projects</li>
+                      <li>• Helps us maintain a high-quality community</li>
+                      <li>• Prevents spam and fake submissions</li>
+                      <li>• Required for all project-related communications</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <Button variant="outline" asChild>
+                  <Link href="/dashboard">Go to Dashboard</Link>
                 </Button>
               </div>
             </CardContent>

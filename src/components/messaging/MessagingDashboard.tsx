@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Send, User, Clock, Mail } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MessageCircle, Send, User, Clock, Mail, Shield } from "lucide-react";
 import type { Conversation, Message } from "@/types";
 
 export function MessagingDashboard() {
@@ -118,6 +119,31 @@ export function MessagingDashboard() {
         <CardContent className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading conversations...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show email verification requirement for unverified users
+  if (!user.emailVerified) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center space-y-4">
+          <Shield className="h-12 w-12 text-orange-500 mx-auto" />
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Email Verification Required</h3>
+            <p className="text-muted-foreground mb-4">
+              You must verify your email address to send and receive messages.
+            </p>
+          </div>
+
+          <Alert className="border-orange-200 bg-orange-50">
+            <Mail className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              <strong>Why verify your email?</strong><br />
+              Email verification helps us prevent spam and ensures you receive important notifications about your conversations.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );

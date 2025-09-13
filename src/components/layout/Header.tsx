@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TagSearch } from "@/components/navigation/TagSearch";
+import { EmailVerificationStatus } from "@/components/auth/EmailVerificationStatus";
 import { Menu, X, User, Settings, LogOut, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -75,6 +76,7 @@ export function Header() {
           <TagSearch />
           {user ? (
             <>
+              <EmailVerificationStatus />
               <Button variant="outline" size="sm" asChild>
                 <Link href="/dashboard" className="flex items-center space-x-2">
                   <LayoutDashboard className="h-4 w-4" />
@@ -195,10 +197,11 @@ export function Header() {
                           {user.displayName?.charAt(0)?.toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
+                      <div className="flex-1">
                         <p className="text-sm font-medium">{user.displayName}</p>
                         <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
+                      <EmailVerificationStatus />
                     </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>

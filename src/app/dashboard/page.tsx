@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Plus, BarChart3, Eye, ExternalLink, Heart, Clock, CheckCircle, XCircle, AlertCircle, Coins, MessageCircle, TrendingUp, Trophy, Star, Info } from "lucide-react";
 import { PointsSystem } from "@/components/dashboard/PointsSystem";
 import { MessagingDashboard } from "@/components/messaging/MessagingDashboard";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { projectService, userService } from "@/lib/firebaseServices";
 import type { Project } from "@/types";
 
@@ -163,6 +164,9 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold">Welcome back, {user.displayName}!</h1>
         <p className="text-muted-foreground">Manage your projects and track their performance on ShowYourProject.com</p>
       </div>
+
+      {/* Email Verification Banner */}
+      <EmailVerificationBanner />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
