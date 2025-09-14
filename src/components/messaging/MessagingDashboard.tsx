@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { messagingService } from "@/lib/firebaseServices";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { MessageCircle, Send, User, Clock, Mail, Shield } from "lucide-react";
+import { MessageCircle, Send, User, Clock, Mail, Shield, History } from "lucide-react";
 import type { Conversation, Message, AdminConversation } from "@/types";
 
 interface ExtendedConversation extends Conversation {
@@ -19,13 +19,27 @@ interface ExtendedConversation extends Conversation {
 export function MessagingDashboard() {
   const { user } = useAuth();
   const { refresh: refreshUnreadCounts } = useUnreadMessages();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [conversations, setConversations] = useState<ExtendedConversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<ExtendedConversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [messagesLimit, setMessagesLimit] = useState(50);
   const [sending, setSending] = useState(false);
+
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Load user's conversations (both regular and admin)
   const loadConversations = async () => {
@@ -86,19 +100,28 @@ export function MessagingDashboard() {
   };
 
   // Load messages for selected conversation
-  const loadMessages = async (conversation: ExtendedConversation) => {
+  const loadMessages = async (conversation: ExtendedConversation, reset: boolean = true) => {
     try {
       setLoadingMessages(true);
+      if (reset) {
+        setMessagesLimit(50);
+        setHasMoreMessages(true);
+      }
       let conversationMessages: Message[];
 
       if (conversation.isAdmin) {
         // Load admin messages
-        conversationMessages = await messagingService.getUserAdminMessages(user.id);
+        conversationMessages = await messagingService.getUserAdminMessages(user.id, messagesLimit);
       } else {
         // Load regular messages
-        conversationMessages = await messagingService.getConversationMessages(conversation.id);
+        conversationMessages = await messagingService.getConversationMessages(conversation.id, messagesLimit);
       }
       setMessages(conversationMessages);
+
+      // Check if there are more messages
+      if (conversationMessages.length < messagesLimit) {
+        setHasMoreMessages(false);
+      }
 
       // Mark messages as read
       if (user) {
@@ -129,6 +152,35 @@ export function MessagingDashboard() {
       console.error("Error loading messages:", error);
     } finally {
       setLoadingMessages(false);
+    }
+  };
+
+  // Load more messages
+  const loadMoreMessages = async () => {
+    if (!selectedConversation || !hasMoreMessages) return;
+
+    try {
+      setLoadingMoreMessages(true);
+      const newLimit = messagesLimit + 50;
+      let conversationMessages: Message[];
+
+      if (selectedConversation.isAdmin) {
+        conversationMessages = await messagingService.getUserAdminMessages(user.id, newLimit);
+      } else {
+        conversationMessages = await messagingService.getConversationMessages(selectedConversation.id, newLimit);
+      }
+
+      setMessages(conversationMessages);
+      setMessagesLimit(newLimit);
+
+      // Check if there are more messages
+      if (conversationMessages.length < newLimit) {
+        setHasMoreMessages(false);
+      }
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+    } finally {
+      setLoadingMoreMessages(false);
     }
   };
 
@@ -361,6 +413,32 @@ export function MessagingDashboard() {
                     </div>
                   </div>
                 )}
+
+                {/* Load More Button */}
+                {hasMoreMessages && messages.length > 0 && (
+                  <div className="text-center pb-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadMoreMessages}
+                      disabled={loadingMoreMessages}
+                      className="text-xs"
+                    >
+                      {loadingMoreMessages ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          <History className="h-3 w-3 mr-2" />
+                          Load More Messages
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
                 {messages.length === 0 && !loadingMessages ? (
                   <div className="text-center py-8">
                     <MessageCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
@@ -408,7 +486,7 @@ export function MessagingDashboard() {
                     </div>
                   );
                 })}
-
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Send Message */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import { ChevronLeft, ChevronRight, Upload, X, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ProjectSubmission } from "@/types";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { projectService } from "@/lib/firebaseServices";
+import { projectService, adminSettingsService } from "@/lib/firebaseServices";
 import { uploadProjectThumbnail, uploadProjectGallery, downloadAndUploadImage } from "@/lib/storage";
 import { formatFileSize } from "@/lib/imageOptimization";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
@@ -43,6 +43,7 @@ export function SubmissionForm() {
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [adminSettings, setAdminSettings] = useState<any>(null);
 
 
   const form = useForm<ProjectSubmission>({
@@ -64,6 +65,19 @@ export function SubmissionForm() {
   });
 
   const { register, handleSubmit, formState: { errors }, watch, setValue, trigger } = form;
+
+  // Load admin settings on component mount
+  useEffect(() => {
+    const loadAdminSettings = async () => {
+      try {
+        const settings = await adminSettingsService.getSettings();
+        setAdminSettings(settings);
+      } catch (error) {
+        console.error('Error loading admin settings:', error);
+      }
+    };
+    loadAdminSettings();
+  }, []);
 
   const addTag = () => {
     if (!newTag.trim()) return;
@@ -380,7 +394,7 @@ export function SubmissionForm() {
       // Check if project was auto-approved or needs review
       const autoApproved = projectData.status === 'approved';
       const message = autoApproved
-        ? "🎉 Project submitted and published successfully! Your project is now live on ShowYourProject.com."
+        ? "🎉 Project submitted successfully!"
         : "🎉 Project submitted successfully! We'll review it within 24 hours and notify you via email.";
 
       alert(message);
@@ -1404,7 +1418,10 @@ export function SubmissionForm() {
                     <p className="text-green-800 font-medium">Ready to submit!</p>
                   </div>
                   <p className="text-green-700 text-sm mt-2">
-                    Your project will be reviewed within 24 hours and you'll receive an email notification.
+                    {adminSettings?.autoApproveProjects
+                      ? "Your project will be published immediately after submission."
+                      : "Your project will be reviewed within 24 hours and you'll receive an email notification."
+                    }
                   </p>
                 </div>
               </div>

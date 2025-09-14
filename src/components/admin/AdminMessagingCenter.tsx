@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { messagingService, userService } from "@/lib/firebaseServices";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,7 @@ import type { AdminConversation, Message, User as UserType, BroadcastMessage } f
 
 export function AdminMessagingCenter() {
   const { user } = useAuth();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [adminConversations, setAdminConversations] = useState<AdminConversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<AdminConversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -41,8 +42,21 @@ export function AdminMessagingCenter() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [messagesLimit, setMessagesLimit] = useState(50);
   const [showNewConversationDialog, setShowNewConversationDialog] = useState(false);
   const [showBroadcastDialog, setShowBroadcastDialog] = useState(false);
+
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Check if user is admin (multiple ways to verify)
   const isAdmin = user && (
@@ -102,15 +116,46 @@ export function AdminMessagingCenter() {
   };
 
   // Load messages for selected conversation
-  const loadMessages = async (conversation: AdminConversation) => {
+  const loadMessages = async (conversation: AdminConversation, reset: boolean = true) => {
     try {
       setLoadingMessages(true);
-      const conversationMessages = await messagingService.getAdminConversationMessages(conversation.id);
+      if (reset) {
+        setMessagesLimit(50);
+        setHasMoreMessages(true);
+      }
+      const conversationMessages = await messagingService.getAdminConversationMessages(conversation.id, messagesLimit);
       setMessages(conversationMessages);
+
+      // Check if there are more messages
+      if (conversationMessages.length < messagesLimit) {
+        setHasMoreMessages(false);
+      }
     } catch (error) {
       console.error("Error loading messages:", error);
     } finally {
       setLoadingMessages(false);
+    }
+  };
+
+  // Load more messages
+  const loadMoreMessages = async () => {
+    if (!selectedConversation || !hasMoreMessages) return;
+
+    try {
+      setLoadingMoreMessages(true);
+      const newLimit = messagesLimit + 50;
+      const conversationMessages = await messagingService.getAdminConversationMessages(selectedConversation.id, newLimit);
+      setMessages(conversationMessages);
+      setMessagesLimit(newLimit);
+
+      // Check if there are more messages
+      if (conversationMessages.length < newLimit) {
+        setHasMoreMessages(false);
+      }
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+    } finally {
+      setLoadingMoreMessages(false);
     }
   };
 
@@ -397,16 +442,43 @@ export function AdminMessagingCenter() {
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col h-[600px]">
                 {!selectedConversation ? (
-                  <div className="text-center py-12">
-                    <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Select a conversation to start messaging</p>
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">Select a conversation to start messaging</p>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <>
                     {/* Messages */}
-                    <div className="h-80 overflow-y-auto space-y-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-1 overflow-y-auto space-y-4 mb-4 p-4 bg-gray-50 rounded-lg relative">
+                      {/* Load More Button */}
+                      {hasMoreMessages && messages.length > 0 && (
+                        <div className="text-center pb-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={loadMoreMessages}
+                            disabled={loadingMoreMessages}
+                            className="text-xs"
+                          >
+                            {loadingMoreMessages ? (
+                              <>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                                Loading...
+                              </>
+                            ) : (
+                              <>
+                                <History className="h-3 w-3 mr-2" />
+                                Load More Messages
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+
                       {loadingMessages ? (
                         <div className="text-center py-8">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -449,6 +521,7 @@ export function AdminMessagingCenter() {
                           </div>
                         ))
                       )}
+                      <div ref={messagesEndRef} />
                     </div>
 
                     {/* Message Input */}
@@ -466,15 +539,15 @@ export function AdminMessagingCenter() {
                           }
                         }}
                       />
-                      <Button 
-                        onClick={handleSendMessage} 
+                      <Button
+                        onClick={handleSendMessage}
                         disabled={sending || !newMessage.trim()}
                         className="self-end"
                       >
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
+                  </>
                 )}
               </CardContent>
             </Card>

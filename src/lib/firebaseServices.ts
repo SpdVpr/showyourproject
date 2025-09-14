@@ -1337,16 +1337,18 @@ export const messagingService = {
   },
 
   // Get messages in a conversation
-  async getConversationMessages(conversationId: string) {
+  async getConversationMessages(conversationId: string, limitCount: number = 50) {
     try {
       const messagesRef = collection(db, 'messages');
       const q = query(
         messagesRef,
         where('conversationId', '==', conversationId),
-        orderBy('createdAt', 'asc')
+        orderBy('createdAt', 'desc'),
+        limit(limitCount)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+      // Reverse to show oldest first
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message)).reverse();
 
     } catch (indexError) {
       console.warn('Index not available for messages query, using fallback');
@@ -1691,16 +1693,18 @@ export const messagingService = {
   },
 
   // Get admin conversation messages
-  async getAdminConversationMessages(conversationId: string) {
+  async getAdminConversationMessages(conversationId: string, limitCount: number = 50) {
     try {
       const messagesRef = collection(db, 'messages');
       const q = query(
         messagesRef,
         where('conversationId', '==', conversationId),
-        orderBy('createdAt', 'asc')
+        orderBy('createdAt', 'desc'),
+        limit(limitCount)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+      // Reverse to show oldest first
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message)).reverse();
     } catch (error) {
       console.error('Error getting admin conversation messages:', error);
       throw error;
@@ -1748,17 +1752,19 @@ export const messagingService = {
   },
 
   // Get messages for user's admin conversation
-  async getUserAdminMessages(userId: string) {
+  async getUserAdminMessages(userId: string, limit: number = 50) {
     try {
       const conversationId = `admin_${userId}`;
       const messagesRef = collection(db, 'messages');
       const q = query(
         messagesRef,
         where('conversationId', '==', conversationId),
-        orderBy('createdAt', 'asc')
+        orderBy('createdAt', 'desc'),
+        limit(limit)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+      // Reverse to show oldest first
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message)).reverse();
     } catch (indexError) {
       console.warn('Index not available for user admin messages, using fallback');
 
