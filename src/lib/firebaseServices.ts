@@ -232,7 +232,7 @@ export const projectService = {
   // Submit new project
   async submitProject(projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) {
     // Check for duplicate URL
-    const isDuplicate = await adminSettingsService.checkDuplicateUrl(projectData.url);
+    const isDuplicate = await adminSettingsService.checkDuplicateUrl(projectData.websiteUrl);
     if (isDuplicate) {
       throw new Error('A project with this URL already exists. Please use a different URL.');
     }
@@ -1029,6 +1029,12 @@ export const adminSettingsService = {
   // Check if URL already exists
   async checkDuplicateUrl(url: string, excludeProjectId?: string) {
     try {
+      // Validate input URL
+      if (!url || typeof url !== 'string') {
+        console.warn('Invalid URL provided to checkDuplicateUrl:', url);
+        return false;
+      }
+
       // Normalize URL for comparison
       const normalizedUrl = url.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
 
@@ -1042,7 +1048,12 @@ export const adminSettingsService = {
           return false; // Exclude current project when editing
         }
 
-        const projectUrl = project.url?.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '') || '';
+        // Safely handle project.websiteUrl - check if it exists and is a string
+        if (!project.websiteUrl || typeof project.websiteUrl !== 'string') {
+          return false;
+        }
+
+        const projectUrl = project.websiteUrl.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
         return projectUrl === normalizedUrl;
       });
 
