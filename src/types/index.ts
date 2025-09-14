@@ -222,6 +222,8 @@ export interface Message {
   content: string;
   createdAt: Timestamp;
   read: boolean;
+  isAdminMessage?: boolean; // Flag for admin messages
+  messageType?: 'regular' | 'admin_direct' | 'admin_broadcast'; // Type of message
 }
 
 export interface Conversation {
@@ -241,4 +243,30 @@ export interface Conversation {
   };
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  isAdminConversation?: boolean; // Flag for admin conversations
+}
+
+// Admin messaging interfaces
+export interface AdminConversation {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  lastMessage?: string;
+  lastMessageAt?: Timestamp;
+  unreadCount: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface BroadcastMessage {
+  id: string;
+  senderId: string; // Admin ID
+  senderName: string;
+  senderEmail: string;
+  subject: string;
+  content: string;
+  recipientCount: number;
+  sentAt: Timestamp;
+  createdAt: Timestamp;
 }

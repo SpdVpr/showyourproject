@@ -13,6 +13,7 @@ import { AdminStats } from "@/components/admin/AdminStats";
 import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
 import { AdminSocialMediaSettings } from "@/components/admin/AdminSocialMediaSettings";
 import { AdminMessaging } from "@/components/admin/AdminMessaging";
+import { AdminMessagingCenter } from "@/components/admin/AdminMessagingCenter";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import Link from "next/link";
 import { Shield, Users, FileText, BarChart3, Settings, AlertTriangle, Search, Star, MessageCircle, Clock } from "lucide-react";
@@ -305,7 +306,7 @@ export default function AdminPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10">
+        <TabsList className="grid w-full grid-cols-11">
           <TabsTrigger value="overview" className="flex items-center space-x-2">
             <BarChart3 className="h-4 w-4" />
             <span>Overview</span>
@@ -329,6 +330,10 @@ export default function AdminPage() {
           <TabsTrigger value="messages" className="flex items-center space-x-2">
             <MessageCircle className="h-4 w-4" />
             <span>Messages</span>
+          </TabsTrigger>
+          <TabsTrigger value="admin-messaging" className="flex items-center space-x-2">
+            <MessageCircle className="h-4 w-4" />
+            <span>Admin Chat</span>
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center space-x-2">
             <AlertTriangle className="h-4 w-4" />
@@ -926,6 +931,10 @@ export default function AdminPage() {
 
         <TabsContent value="messages" className="space-y-6">
           <AdminMessaging />
+        </TabsContent>
+
+        <TabsContent value="admin-messaging" className="space-y-6">
+          <AdminMessagingCenter />
         </TabsContent>
       </Tabs>
     </div>

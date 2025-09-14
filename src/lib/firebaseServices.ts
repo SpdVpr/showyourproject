@@ -17,7 +17,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from './firebase';
-import { Project, User, PointsTransaction, FeaturedSlot, POINTS_CONFIG, Message, Conversation } from '@/types';
+import { Project, User, PointsTransaction, FeaturedSlot, POINTS_CONFIG, Message, Conversation, AdminConversation, BroadcastMessage } from '@/types';
 import { dataCache, CACHE_KEYS, CACHE_TTL, withCache, withDynamicCache, invalidateCache } from './cache';
 import { socialMediaManager } from './socialMediaService';
 
@@ -1496,6 +1496,218 @@ export const messagingService = {
         todayMessages: 0,
         uniqueMessagingUsers: 0
       };
+    }
+  },
+
+  // Admin messaging functions
+
+  // Start admin conversation with a user
+  async startAdminConversation(adminId: string, adminName: string, adminEmail: string, userId: string, userName: string, userEmail: string) {
+    try {
+      // Check if admin conversation already exists
+      const conversationsRef = collection(db, 'adminConversations');
+      const q = query(
+        conversationsRef,
+        where('userId', '==', userId)
+      );
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        // Return existing conversation
+        const doc = snapshot.docs[0];
+        return { id: doc.id, ...doc.data() } as AdminConversation;
+      }
+
+      // Create new admin conversation
+      const conversationData: Omit<AdminConversation, 'id'> = {
+        userId,
+        userName,
+        userEmail,
+        unreadCount: 0,
+        createdAt: serverTimestamp() as any,
+        updatedAt: serverTimestamp() as any
+      };
+
+      const docRef = await addDoc(conversationsRef, conversationData);
+      return { id: docRef.id, ...conversationData } as AdminConversation;
+
+    } catch (error) {
+      console.error('Error starting admin conversation:', error);
+      throw error;
+    }
+  },
+
+  // Send admin message to specific user
+  async sendAdminMessage(adminId: string, adminName: string, adminEmail: string, userId: string, userName: string, userEmail: string, content: string) {
+    try {
+      // Start or get admin conversation
+      const conversation = await this.startAdminConversation(adminId, adminName, adminEmail, userId, userName, userEmail);
+
+      // Add message to regular messages collection with admin flags
+      const messageData: Omit<Message, 'id'> = {
+        conversationId: conversation.id,
+        senderId: adminId,
+        senderName: adminName,
+        senderEmail: adminEmail,
+        content,
+        createdAt: serverTimestamp() as any,
+        read: false,
+        isAdminMessage: true,
+        messageType: 'admin_direct'
+      };
+
+      const messagesRef = collection(db, 'messages');
+      const messageDoc = await addDoc(messagesRef, messageData);
+
+      // Update admin conversation
+      const conversationRef = doc(db, 'adminConversations', conversation.id);
+      await updateDoc(conversationRef, {
+        lastMessage: content.substring(0, 100),
+        lastMessageAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        unreadCount: increment(1)
+      });
+
+      return { id: messageDoc.id, ...messageData } as Message;
+
+    } catch (error) {
+      console.error('Error sending admin message:', error);
+      throw error;
+    }
+  },
+
+  // Send broadcast message to all users
+  async sendBroadcastMessage(adminId: string, adminName: string, adminEmail: string, subject: string, content: string) {
+    try {
+      // Get all users
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+      const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+
+      // Create broadcast message record
+      const broadcastData: Omit<BroadcastMessage, 'id'> = {
+        senderId: adminId,
+        senderName: adminName,
+        senderEmail: adminEmail,
+        subject,
+        content,
+        recipientCount: users.length,
+        sentAt: serverTimestamp() as any,
+        createdAt: serverTimestamp() as any
+      };
+
+      const broadcastRef = collection(db, 'broadcastMessages');
+      const broadcastDoc = await addDoc(broadcastRef, broadcastData);
+
+      // Send individual messages to each user
+      const batch = writeBatch(db);
+      const messagesRef = collection(db, 'messages');
+      const adminConversationsRef = collection(db, 'adminConversations');
+
+      for (const user of users) {
+        // Skip admin users
+        if (user.role === 'admin') continue;
+
+        // Create or update admin conversation for each user
+        const conversationId = `admin_${user.id}`;
+        const conversationRef = doc(adminConversationsRef, conversationId);
+
+        batch.set(conversationRef, {
+          userId: user.id,
+          userName: user.displayName || 'User',
+          userEmail: user.email,
+          lastMessage: content.substring(0, 100),
+          lastMessageAt: serverTimestamp(),
+          unreadCount: increment(1),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+
+        // Create message
+        const messageRef = doc(messagesRef);
+        batch.set(messageRef, {
+          conversationId,
+          senderId: adminId,
+          senderName: adminName,
+          senderEmail: adminEmail,
+          content: `**${subject}**\n\n${content}`,
+          createdAt: serverTimestamp(),
+          read: false,
+          isAdminMessage: true,
+          messageType: 'admin_broadcast'
+        });
+      }
+
+      await batch.commit();
+
+      return { id: broadcastDoc.id, ...broadcastData } as BroadcastMessage;
+
+    } catch (error) {
+      console.error('Error sending broadcast message:', error);
+      throw error;
+    }
+  },
+
+  // Get all admin conversations
+  async getAdminConversations() {
+    try {
+      const conversationsRef = collection(db, 'adminConversations');
+      const q = query(conversationsRef, orderBy('updatedAt', 'desc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AdminConversation));
+    } catch (indexError) {
+      console.warn('Index not available for admin conversations, using fallback');
+
+      // Fallback: get all and sort client-side
+      const conversationsRef = collection(db, 'adminConversations');
+      const snapshot = await getDocs(conversationsRef);
+      const conversations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AdminConversation));
+
+      return conversations.sort((a, b) => {
+        const aTime = a.updatedAt?.toDate?.() || new Date(0);
+        const bTime = b.updatedAt?.toDate?.() || new Date(0);
+        return bTime.getTime() - aTime.getTime();
+      });
+    }
+  },
+
+  // Get admin conversation messages
+  async getAdminConversationMessages(conversationId: string) {
+    try {
+      const messagesRef = collection(db, 'messages');
+      const q = query(
+        messagesRef,
+        where('conversationId', '==', conversationId),
+        orderBy('createdAt', 'asc')
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+    } catch (error) {
+      console.error('Error getting admin conversation messages:', error);
+      throw error;
+    }
+  },
+
+  // Get broadcast messages history
+  async getBroadcastMessages() {
+    try {
+      const broadcastRef = collection(db, 'broadcastMessages');
+      const q = query(broadcastRef, orderBy('sentAt', 'desc'), limit(50));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BroadcastMessage));
+    } catch (indexError) {
+      console.warn('Index not available for broadcast messages, using fallback');
+
+      // Fallback: get all and sort client-side
+      const broadcastRef = collection(db, 'broadcastMessages');
+      const snapshot = await getDocs(broadcastRef);
+      const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BroadcastMessage));
+
+      return messages.sort((a, b) => {
+        const aTime = a.sentAt?.toDate?.() || new Date(0);
+        const bTime = b.sentAt?.toDate?.() || new Date(0);
+        return bTime.getTime() - aTime.getTime();
+      }).slice(0, 50);
     }
   }
 };

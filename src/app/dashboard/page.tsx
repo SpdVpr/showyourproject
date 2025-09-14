@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Plus, BarChart3, Eye, ExternalLink, Heart, Clock, CheckCircle, XCircle, AlertCircle, Coins, MessageCircle, TrendingUp, Trophy, Star, Info } from "lucide-react";
 import { PointsSystem } from "@/components/dashboard/PointsSystem";
 import { MessagingDashboard } from "@/components/messaging/MessagingDashboard";
+import { AdminMessages } from "@/components/messaging/AdminMessages";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { projectService, userService } from "@/lib/firebaseServices";
 import type { Project } from "@/types";
@@ -547,7 +548,10 @@ export default function DashboardPage() {
         </TabsContent>
 
         <TabsContent value="messages" className="space-y-6">
-          <MessagingDashboard />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AdminMessages />
+            <MessagingDashboard />
+          </div>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
