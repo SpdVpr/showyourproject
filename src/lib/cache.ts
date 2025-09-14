@@ -116,7 +116,7 @@ export const CACHE_KEYS = {
 // Cache TTL in minutes
 export const CACHE_TTL = {
   PROJECTS: 5, // 5 minutes for project lists
-  PROJECT_DETAIL: 10, // 10 minutes for individual projects
+  PROJECT_DETAIL: 2, // 2 minutes for individual projects (shorter for real-time stats)
   CATEGORIES: 30, // 30 minutes for categories (rarely change)
   USER_DATA: 2, // 2 minutes for user-specific data
 } as const;

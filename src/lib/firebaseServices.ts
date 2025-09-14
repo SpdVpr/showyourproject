@@ -348,6 +348,10 @@ export const projectService = {
     await updateDoc(projectRef, {
       viewCount: increment(1)
     });
+
+    // Invalidate project cache to refresh stats immediately
+    invalidateCache(`project_${id}`);
+    console.log(`Cache invalidated after view count increment for project: ${id}`);
   },
 
   // Increment click count
@@ -356,6 +360,10 @@ export const projectService = {
     await updateDoc(projectRef, {
       clickCount: increment(1)
     });
+
+    // Invalidate project cache to refresh stats immediately
+    invalidateCache(`project_${id}`);
+    console.log(`Cache invalidated after click count increment for project: ${id}`);
   },
 
   // Get project ranking in category and overall

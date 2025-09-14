@@ -358,21 +358,21 @@ export function SubmissionForm() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="space-y-8"
+            className="space-y-4 md:space-y-8"
           >
             {/* URL Input - FIRST */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-2xl blur-xl"></div>
-              <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
+              <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg">
+                <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
+                  <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Project URL</h3>
-                    <p className="text-gray-600">We'll automatically fetch project details</p>
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-900">Project URL</h3>
+                    <p className="text-sm md:text-base text-gray-600">We'll automatically fetch project details</p>
                   </div>
                 </div>
 
@@ -380,8 +380,8 @@ export function SubmissionForm() {
                   <Input
                     id="websiteUrl"
                     {...register("websiteUrl")}
-                    placeholder="your-awesome-project.com or https://your-awesome-project.com"
-                    className="h-14 text-lg pl-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-0 transition-all duration-200"
+                    placeholder="your-awesome-project.com"
+                    className="h-10 md:h-14 text-sm md:text-lg pl-3 md:pl-4 pr-10 md:pr-12 border-2 border-gray-200 rounded-lg md:rounded-xl focus:border-purple-500 focus:ring-0 transition-all duration-200"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -479,17 +479,17 @@ export function SubmissionForm() {
 
             {/* Project Name Input */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl blur-xl"></div>
-              <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
+              <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg">
+                <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
+                  <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Project Name</h3>
-                    <p className="text-gray-600">What's your project called?</p>
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-900">Project Name</h3>
+                    <p className="text-sm md:text-base text-gray-600">What's your project called?</p>
                   </div>
                 </div>
 
@@ -497,8 +497,8 @@ export function SubmissionForm() {
                   <Input
                     id="name"
                     {...register("name")}
-                    placeholder="e.g. TaskFlow Pro, AI Assistant, My Startup..."
-                    className="h-14 text-lg pl-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0 transition-all duration-200"
+                    placeholder="e.g. TaskFlow Pro, AI Assistant..."
+                    className="h-10 md:h-14 text-sm md:text-lg pl-3 md:pl-4 pr-16 md:pr-20 border-2 border-gray-200 rounded-lg md:rounded-xl focus:border-blue-500 focus:ring-0 transition-all duration-200"
                     maxLength={27}
                     onChange={(e) => {
                       // Enforce 27 character limit
@@ -511,8 +511,8 @@ export function SubmissionForm() {
                       }
                     }}
                   />
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    <div className="flex items-center space-x-2">
+                  <div className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2">
+                    <div className="flex items-center space-x-1 md:space-x-2">
                       <span className="text-xs text-gray-500">
                         {watch('name')?.length || 0}/27
                       </span>
@@ -535,17 +535,17 @@ export function SubmissionForm() {
 
             {/* Short Description Input */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/10 to-teal-600/10 rounded-2xl blur-xl"></div>
-              <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/10 to-teal-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
+              <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg">
+                <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
+                  <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Short Description</h3>
-                    <p className="text-gray-600">Brief tagline for project cards (max 160 chars)</p>
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-900">Short Description</h3>
+                    <p className="text-sm md:text-base text-gray-600">Brief tagline (max 160 chars)</p>
                   </div>
                 </div>
 
@@ -554,7 +554,7 @@ export function SubmissionForm() {
                     id="tagline"
                     {...register("tagline")}
                     placeholder="e.g. The ultimate productivity tool for modern teams..."
-                    className="min-h-[80px] text-lg pl-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-0 transition-all duration-200 resize-none"
+                    className="min-h-[60px] md:min-h-[80px] text-sm md:text-lg pl-3 md:pl-4 pr-16 md:pr-20 border-2 border-gray-200 rounded-lg md:rounded-xl focus:border-emerald-500 focus:ring-0 transition-all duration-200 resize-none"
                     maxLength={160}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -562,8 +562,8 @@ export function SubmissionForm() {
                       }
                     }}
                   />
-                  <div className="absolute right-4 bottom-4">
-                    <div className="flex items-center space-x-2">
+                  <div className="absolute right-2 md:right-4 bottom-2 md:bottom-4">
+                    <div className="flex items-center space-x-1 md:space-x-2">
                       <span className="text-xs text-gray-500">
                         {watch('tagline')?.length || 0}/160
                       </span>
@@ -586,17 +586,17 @@ export function SubmissionForm() {
 
             {/* Full Description */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 rounded-2xl blur-xl"></div>
-              <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
+              <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg">
+                <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
+                  <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Full Description</h3>
-                    <p className="text-gray-600">Detailed description of your project</p>
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-900">Full Description</h3>
+                    <p className="text-sm md:text-base text-gray-600">Detailed description of your project</p>
                   </div>
                 </div>
 
@@ -604,8 +604,8 @@ export function SubmissionForm() {
                   <RichTextEditor
                     content={watch('description') || ''}
                     onChange={(content) => setValue('description', content)}
-                    placeholder="Describe your project in detail. What does it do? What problem does it solve? What makes it special?"
-                    className="text-lg"
+                    placeholder="Describe your project in detail. What does it do? What problem does it solve?"
+                    className="text-sm md:text-lg"
                   />
                 </div>
 
@@ -644,26 +644,26 @@ export function SubmissionForm() {
             </div>
 
             {/* Category & Tags */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* Category */}
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-600/10 to-red-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg min-h-[280px] flex flex-col">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-red-600 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col">
+                  <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
+                    <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-orange-600 to-red-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Category</h3>
-                      <p className="text-gray-600">Choose the best fit</p>
+                      <h3 className="text-lg md:text-xl font-semibold text-gray-900">Category</h3>
+                      <p className="text-sm md:text-base text-gray-600">Choose the best fit</p>
                     </div>
                   </div>
 
                   <div className="flex-1 flex flex-col justify-center">
                     <Select onValueChange={(value) => setValue("category", value)}>
-                      <SelectTrigger className="h-12 text-lg border-2 border-gray-200 rounded-xl focus:border-orange-500">
+                      <SelectTrigger className="h-10 md:h-12 text-sm md:text-lg border-2 border-gray-200 rounded-lg md:rounded-xl focus:border-orange-500">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -689,17 +689,17 @@ export function SubmissionForm() {
               {/* Tags */}
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-600/10 to-cyan-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg min-h-[280px] flex flex-col">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col">
+                  <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
+                    <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-teal-600 to-cyan-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                       </svg>
                     </div>
-                    <div>
-                      <div className="flex items-center space-x-3">
-                        <h3 className="text-xl font-semibold text-gray-900">Tags</h3>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <h3 className="text-lg md:text-xl font-semibold text-gray-900">Tags</h3>
+                        <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium ${
                           tags.length >= 8
                             ? 'bg-red-100 text-red-700'
                             : tags.length >= 6
@@ -709,17 +709,17 @@ export function SubmissionForm() {
                           {tags.length}/8
                         </span>
                       </div>
-                      <p className="text-gray-600">Add relevant keywords (max 8 tags)</p>
+                      <p className="text-sm md:text-base text-gray-600">Add relevant keywords (max 8)</p>
                     </div>
                   </div>
 
                   <div className="flex-1 flex flex-col">
-                    <div className="flex space-x-2 mb-4">
+                    <div className="flex space-x-2 mb-3 md:mb-4">
                       <Input
                         value={newTag}
                         onChange={(e) => setNewTag(e.target.value)}
                         placeholder="Add tags (separate with commas)..."
-                        className="flex-1 h-12 text-lg border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-0"
+                        className="flex-1 h-8 md:h-12 text-sm md:text-lg border-2 border-gray-200 rounded-lg md:rounded-xl focus:border-teal-500 focus:ring-0"
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
@@ -767,26 +767,26 @@ export function SubmissionForm() {
             </div>
 
             {/* Team Size & Founded Year */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* Team Size */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg min-h-[280px] flex flex-col">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
+                <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col">
+                  <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
+                    <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Team Size</h3>
-                      <p className="text-gray-600">How many people work on this project?</p>
+                      <h3 className="text-lg md:text-xl font-semibold text-gray-900">Team Size</h3>
+                      <p className="text-sm md:text-base text-gray-600">How many people work on this?</p>
                     </div>
                   </div>
 
                   <div className="flex-1 flex flex-col justify-center">
                     <Select onValueChange={(value) => setValue("teamSize", value as any)} defaultValue="1">
-                      <SelectTrigger className="h-12 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500">
+                      <SelectTrigger className="h-10 md:h-12 text-sm md:text-lg border-2 border-gray-200 rounded-lg md:rounded-xl focus:border-blue-500">
                         <SelectValue placeholder="Select team size" />
                       </SelectTrigger>
                       <SelectContent>
@@ -811,23 +811,23 @@ export function SubmissionForm() {
 
               {/* Founded Year */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-emerald-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg min-h-[280px] flex flex-col">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-emerald-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
+                <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col">
+                  <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
+                    <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Founded Year</h3>
-                      <p className="text-gray-600">When was this project started?</p>
+                      <h3 className="text-lg md:text-xl font-semibold text-gray-900">Founded Year</h3>
+                      <p className="text-sm md:text-base text-gray-600">When was this project started?</p>
                     </div>
                   </div>
 
                   <div className="flex-1 flex flex-col justify-center">
                     <Select onValueChange={(value) => setValue("foundedYear", parseInt(value))} defaultValue={new Date().getFullYear().toString()}>
-                      <SelectTrigger className="h-12 text-lg border-2 border-gray-200 rounded-xl focus:border-green-500">
+                      <SelectTrigger className="h-10 md:h-12 text-sm md:text-lg border-2 border-gray-200 rounded-lg md:rounded-xl focus:border-green-500">
                         <SelectValue placeholder="Select founded year" />
                       </SelectTrigger>
                       <SelectContent className="max-h-48">
@@ -1300,34 +1300,34 @@ export function SubmissionForm() {
   return (
     <div className="max-w-4xl mx-auto">
       <Card className="w-full shadow-xl border-0 bg-gradient-to-br from-white to-gray-50">
-        <CardHeader className="text-center pb-8">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <CardHeader className="text-center pb-6 md:pb-8 px-4 md:px-8">
+          <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Submit Your Project
           </CardTitle>
-          <CardDescription className="text-lg text-gray-600 mt-2">
+          <CardDescription className="text-base md:text-lg text-gray-600 mt-2">
             Share your amazing project with the world
           </CardDescription>
           
           {/* Progress Bar */}
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mt-6 md:mt-8">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
-                    currentStep >= step.id 
-                      ? 'bg-blue-600 border-blue-600 text-white' 
+                  <div className={`flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border-2 transition-all duration-300 ${
+                    currentStep >= step.id
+                      ? 'bg-blue-600 border-blue-600 text-white'
                       : 'border-gray-300 text-gray-400'
                   }`}>
                     {currentStep > step.id ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      step.id
+                      <span className="text-xs md:text-sm font-semibold">{step.id}</span>
                     )}
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`w-16 h-1 mx-2 rounded-full transition-all duration-300 ${
+                    <div className={`w-12 md:w-16 h-1 mx-1 md:mx-2 rounded-full transition-all duration-300 ${
                       currentStep > step.id ? 'bg-blue-600' : 'bg-gray-200'
                     }`} />
                   )}
@@ -1335,26 +1335,26 @@ export function SubmissionForm() {
               ))}
             </div>
             <div className="text-center">
-              <h4 className="font-semibold text-gray-900">{steps[currentStep - 1].title}</h4>
-              <p className="text-sm text-gray-600">{steps[currentStep - 1].description}</p>
+              <h4 className="text-base md:text-lg font-semibold text-gray-900">{steps[currentStep - 1].title}</h4>
+              <p className="text-xs md:text-sm text-gray-600">{steps[currentStep - 1].description}</p>
             </div>
           </div>
         </CardHeader>
 
         <div>
-          <CardContent className="px-8 pb-8">
+          <CardContent className="px-4 md:px-8 pb-6 md:pb-8">
             <AnimatePresence mode="wait">
               {renderStep()}
             </AnimatePresence>
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between items-center mt-12 pt-8 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 md:mt-12 pt-6 md:pt-8 border-t border-gray-200">
               <Button
                 type="button"
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 w-full sm:w-auto order-2 sm:order-1"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span>Previous</span>
@@ -1364,7 +1364,7 @@ export function SubmissionForm() {
                 <Button
                   type="button"
                   onClick={nextStep}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto order-1 sm:order-2"
                 >
                   <span>Next</span>
                   <ChevronRight className="h-4 w-4" />
@@ -1389,7 +1389,7 @@ export function SubmissionForm() {
                     }
                   )}
                   disabled={isSubmitting}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 w-full sm:w-auto order-1 sm:order-2"
                 >
                   {isSubmitting ? (
                     <>

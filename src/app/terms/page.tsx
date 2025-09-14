@@ -107,7 +107,7 @@ export default function TermsPage() {
                 If you have any questions about these Terms of Service, please contact us at:
               </p>
               <p>
-                <strong>Email:</strong> admin@showyourproject.com
+                <strong>Email:</strong> support@showyourproject.com
               </p>
             </CardContent>
           </Card>

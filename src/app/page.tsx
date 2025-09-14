@@ -6,6 +6,8 @@ import { FeaturedProjects } from "@/components/homepage/FeaturedProjects";
 import { NewProjects } from "@/components/homepage/NewProjects";
 import { CategoriesGrid } from "@/components/homepage/CategoriesGrid";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 // Optimized animation variants
 
@@ -49,6 +51,22 @@ export default function Home() {
               and earn valuable backlinks to boost your SEO. Now with smart auto-fill from website metadata!
             </motion.p>
 
+            {/* Mobile Submit Button - Only visible on mobile devices */}
+            <motion.div
+              className="mt-8 md:hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              <Link href="/submit">
+                <Button
+                  size="lg"
+                  className="w-full max-w-sm mx-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  Submit Your Project
+                </Button>
+              </Link>
+            </motion.div>
 
           </motion.div>
         </div>

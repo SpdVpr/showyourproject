@@ -13,28 +13,28 @@ export default function SubmitPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 md:py-8">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-4">Submit Your Project</h1>
-          <p className="text-muted-foreground mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Submit Your Project</h1>
+          <p className="text-muted-foreground mb-6 md:mb-8 text-sm md:text-base">
             Join thousands of entrepreneurs showcasing their projects to the world
           </p>
 
-          <Card className="p-8">
-            <CardContent className="space-y-6">
+          <Card className="p-4 md:p-8">
+            <CardContent className="space-y-4 md:space-y-6">
               <div className="text-center">
-                <Plus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h2 className="text-xl font-semibold mb-2">Ready to get started?</h2>
-                <p className="text-muted-foreground mb-6">
+                <Plus className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mx-auto mb-3 md:mb-4" />
+                <h2 className="text-lg md:text-xl font-semibold mb-2">Ready to get started?</h2>
+                <p className="text-muted-foreground mb-4 md:mb-6 text-sm md:text-base">
                   Sign in to submit your project on ShowYourProject.com and start getting traffic and backlinks
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild>
+              <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:justify-center">
+                <Button asChild className="w-full md:w-auto">
                   <Link href="/login">Sign In</Link>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="w-full md:w-auto">
                   <Link href="/register">Create Account</Link>
                 </Button>
               </div>
@@ -48,32 +48,32 @@ export default function SubmitPage() {
   // Show email verification requirement for unverified users
   if (!user.emailVerified) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 md:py-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-4 text-center">Submit Your Project</h1>
-          <p className="text-muted-foreground mb-8 text-center">
+          <h1 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 text-center">Submit Your Project</h1>
+          <p className="text-muted-foreground mb-6 md:mb-8 text-center text-sm md:text-base">
             Join thousands of entrepreneurs showcasing their projects to the world
           </p>
 
           {/* Email Verification Banner */}
           <EmailVerificationBanner />
 
-          <Card className="p-8">
-            <CardContent className="space-y-6">
+          <Card className="p-4 md:p-8">
+            <CardContent className="space-y-4 md:space-y-6">
               <div className="text-center">
-                <Shield className="h-12 w-12 text-orange-500 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold mb-2">Email Verification Required</h2>
-                <p className="text-muted-foreground mb-6">
+                <Shield className="h-10 w-10 md:h-12 md:w-12 text-orange-500 mx-auto mb-3 md:mb-4" />
+                <h2 className="text-lg md:text-xl font-semibold mb-2">Email Verification Required</h2>
+                <p className="text-muted-foreground mb-4 md:mb-6 text-sm md:text-base">
                   To maintain quality and prevent spam, you must verify your email address before submitting projects.
                 </p>
               </div>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex items-start space-x-3">
-                  <Mail className="h-5 w-5 text-orange-600 mt-0.5" />
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 md:p-4">
+                <div className="flex items-start space-x-2 md:space-x-3">
+                  <Mail className="h-4 w-4 md:h-5 md:w-5 text-orange-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-medium text-orange-800 mb-1">Why verify your email?</h3>
-                    <ul className="text-sm text-orange-700 space-y-1">
+                    <h3 className="font-medium text-orange-800 mb-1 text-sm md:text-base">Why verify your email?</h3>
+                    <ul className="text-xs md:text-sm text-orange-700 space-y-1">
                       <li>• Ensures you receive important notifications about your projects</li>
                       <li>• Helps us maintain a high-quality community</li>
                       <li>• Prevents spam and fake submissions</li>
@@ -84,7 +84,7 @@ export default function SubmitPage() {
               </div>
 
               <div className="text-center">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="w-full md:w-auto">
                   <Link href="/dashboard">Go to Dashboard</Link>
                 </Button>
               </div>
@@ -96,48 +96,48 @@ export default function SubmitPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-4 md:py-8">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-4">Submit Your Project</h1>
-          <p className="text-muted-foreground">
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Submit Your Project</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Get your project in front of thousands of potential users on ShowYourProject.com and earn quality backlinks
           </p>
         </div>
 
         {/* Benefits */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card>
-            <CardHeader className="text-center">
-              <Zap className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <CardTitle className="text-lg">Free Traffic</CardTitle>
+            <CardHeader className="text-center pb-3 md:pb-6">
+              <Zap className="h-6 w-6 md:h-8 md:w-8 text-blue-600 mx-auto mb-2" />
+              <CardTitle className="text-base md:text-lg">Free Traffic</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground text-center">
+            <CardContent className="pt-0">
+              <p className="text-xs md:text-sm text-muted-foreground text-center">
                 Get discovered by thousands of visitors actively looking for new tools and solutions
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="text-center">
-              <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <CardTitle className="text-lg">Quality Backlinks</CardTitle>
+            <CardHeader className="text-center pb-3 md:pb-6">
+              <CheckCircle className="h-6 w-6 md:h-8 md:w-8 text-green-600 mx-auto mb-2" />
+              <CardTitle className="text-base md:text-lg">Quality Backlinks</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground text-center">
+            <CardContent className="pt-0">
+              <p className="text-xs md:text-sm text-muted-foreground text-center">
                 Earn high-quality backlinks that boost your SEO and search engine rankings
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="text-center">
-              <Clock className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <CardTitle className="text-lg">Quick Review</CardTitle>
+            <CardHeader className="text-center pb-3 md:pb-6">
+              <Clock className="h-6 w-6 md:h-8 md:w-8 text-purple-600 mx-auto mb-2" />
+              <CardTitle className="text-base md:text-lg">Quick Review</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground text-center">
+            <CardContent className="pt-0">
+              <p className="text-xs md:text-sm text-muted-foreground text-center">
                 Our team reviews submissions within 24 hours to ensure quality and relevance
               </p>
             </CardContent>
@@ -148,12 +148,12 @@ export default function SubmitPage() {
         <SubmissionForm />
 
         {/* Guidelines */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Submission Guidelines</CardTitle>
+        <Card className="mt-6 md:mt-8">
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="text-lg md:text-xl">Submission Guidelines</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm text-muted-foreground">
               <li>• Your project must be live and accessible via a public URL</li>
               <li>• Provide a clear, compelling description of what your project does</li>
               <li>• Include relevant tags to help users discover your project</li>
