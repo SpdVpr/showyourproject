@@ -1231,20 +1231,32 @@ export const messagingService = {
       const messagesRef = collection(db, 'messages');
       const messageDoc = await addDoc(messagesRef, messageData);
 
-      // Update conversation
-      const conversationRef = doc(db, 'conversations', conversationId);
-      const conversationDoc = await getDoc(conversationRef);
-      const conversation = conversationDoc.data() as Conversation;
+      // Check if this is an admin conversation
+      if (conversationId.startsWith('admin_')) {
+        // Update admin conversation
+        const adminConversationRef = doc(db, 'adminConversations', conversationId);
+        await updateDoc(adminConversationRef, {
+          lastMessage: content.substring(0, 100),
+          lastMessageAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          unreadCount: increment(1) // Admin will see unread count
+        });
+      } else {
+        // Update regular conversation
+        const conversationRef = doc(db, 'conversations', conversationId);
+        const conversationDoc = await getDoc(conversationRef);
+        const conversation = conversationDoc.data() as Conversation;
 
-      // Determine who should get the unread count increment
-      const receiverId = senderId === conversation.projectOwnerId ? conversation.contacterId : conversation.projectOwnerId;
+        // Determine who should get the unread count increment
+        const receiverId = senderId === conversation.projectOwnerId ? conversation.contacterId : conversation.projectOwnerId;
 
-      await updateDoc(conversationRef, {
-        lastMessage: content.substring(0, 100),
-        lastMessageAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        [`unreadCount.${receiverId}`]: increment(1)
-      });
+        await updateDoc(conversationRef, {
+          lastMessage: content.substring(0, 100),
+          lastMessageAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          [`unreadCount.${receiverId}`]: increment(1)
+        });
+      }
 
       return { id: messageDoc.id, ...messageData } as Message;
 

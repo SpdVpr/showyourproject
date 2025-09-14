@@ -21,9 +21,16 @@ function DashboardContent() {
   const { user, logout, refreshUser } = useAuth();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
+  const [activeTab, setActiveTab] = useState("overview");
   const [userProjects, setUserProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Update active tab when URL changes
+  useEffect(() => {
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
 
   // Load user's projects from Firebase
   const loadUserProjects = async () => {

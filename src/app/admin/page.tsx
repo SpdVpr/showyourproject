@@ -766,63 +766,107 @@ export default function AdminPage() {
                     Manage user accounts and permissions
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   {users.length > 0 ? (
-                    <div className="space-y-4">
-                      {users.map((user) => (
-                        <div
-                          key={user.id}
-                          className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                                <span className="text-white font-semibold text-sm">
-                                  {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-
-                              <div>
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <h3 className="font-semibold">{user.displayName || 'No name'}</h3>
-                                  {(user.role === "admin" || user.isAdmin) && (
-                                    <Badge className="bg-purple-100 text-purple-800">Admin</Badge>
-                                  )}
-                                  {user.disabled ? (
-                                    <Badge className="bg-red-100 text-red-800">Disabled</Badge>
-                                  ) : (
-                                    <Badge className="bg-green-100 text-green-800">Active</Badge>
-                                  )}
-                                  {user.emailVerified && (
-                                    <Badge variant="outline" className="text-green-600">✓ Verified</Badge>
-                                  )}
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b">
+                          <tr>
+                            <th className="text-left p-4 font-medium text-gray-900">User</th>
+                            <th className="text-left p-4 font-medium text-gray-900">Email</th>
+                            <th className="text-left p-4 font-medium text-gray-900">Status</th>
+                            <th className="text-left p-4 font-medium text-gray-900">Projects</th>
+                            <th className="text-left p-4 font-medium text-gray-900">Points</th>
+                            <th className="text-left p-4 font-medium text-gray-900">Joined</th>
+                            <th className="text-left p-4 font-medium text-gray-900">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {users.map((user) => (
+                            <tr
+                              key={user.id}
+                              className="border-b hover:bg-gray-50 transition-colors"
+                            >
+                              {/* User Column */}
+                              <td className="p-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-semibold text-xs">
+                                      {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-gray-900">
+                                      {user.displayName || 'No name'}
+                                    </div>
+                                    <div className="flex items-center space-x-1 mt-1">
+                                      {(user.role === "admin" || user.isAdmin) && (
+                                        <Badge className="bg-purple-100 text-purple-800 text-xs">Admin</Badge>
+                                      )}
+                                      {user.emailVerified && (
+                                        <Badge variant="outline" className="text-green-600 text-xs">✓</Badge>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
+                              </td>
 
-                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                                  <span>{user.email}</span>
-                                  {user.createdAt && (
-                                    <span>Joined {user.createdAt.toDate().toLocaleDateString()} at {user.createdAt.toDate().toLocaleTimeString()}</span>
-                                  )}
-                                  <span>{user.projectsSubmitted || 0} projects</span>
-                                  {user.points && (
-                                    <span>{user.points} points</span>
-                                  )}
+                              {/* Email Column */}
+                              <td className="p-4">
+                                <div className="text-sm text-gray-900">{user.email}</div>
+                              </td>
+
+                              {/* Status Column */}
+                              <td className="p-4">
+                                {user.disabled ? (
+                                  <Badge className="bg-red-100 text-red-800">Disabled</Badge>
+                                ) : (
+                                  <Badge className="bg-green-100 text-green-800">Active</Badge>
+                                )}
+                              </td>
+
+                              {/* Projects Column */}
+                              <td className="p-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.projectsSubmitted || 0}
                                 </div>
-                              </div>
-                            </div>
+                              </td>
 
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => window.open(`/dashboard?user=${user.id}`, '_blank')}
-                              >
-                                View Profile
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                              {/* Points Column */}
+                              <td className="p-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.points || 0}
+                                </div>
+                              </td>
+
+                              {/* Joined Column */}
+                              <td className="p-4">
+                                {user.createdAt && (
+                                  <div className="text-sm text-gray-600">
+                                    <div>{user.createdAt.toDate().toLocaleDateString()}</div>
+                                    <div className="text-xs text-gray-500">
+                                      {user.createdAt.toDate().toLocaleTimeString()}
+                                    </div>
+                                  </div>
+                                )}
+                              </td>
+
+                              {/* Actions Column */}
+                              <td className="p-4">
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => window.open(`/dashboard?user=${user.id}`, '_blank')}
+                                  >
+                                    View Profile
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   ) : (
                     <div className="text-center py-8">
