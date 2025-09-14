@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { messagingService } from "@/lib/firebaseServices";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ interface ExtendedConversation extends Conversation {
 
 export function MessagingDashboard() {
   const { user } = useAuth();
+  const { refresh: refreshUnreadCounts } = useUnreadMessages();
   const [conversations, setConversations] = useState<ExtendedConversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<ExtendedConversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -73,6 +75,9 @@ export function MessagingDashboard() {
       });
 
       setConversations(allConversations);
+
+      // Refresh unread counts in header
+      refreshUnreadCounts();
     } catch (error) {
       console.error("Error loading conversations:", error);
     } finally {
@@ -114,6 +119,11 @@ export function MessagingDashboard() {
             return conv;
           })
         );
+
+        // Refresh unread counts in header (with small delay to ensure Firebase update is complete)
+        setTimeout(() => {
+          refreshUnreadCounts();
+        }, 100);
       }
     } catch (error) {
       console.error("Error loading messages:", error);
@@ -152,6 +162,11 @@ export function MessagingDashboard() {
       // Reload messages and conversations
       await loadMessages(selectedConversation);
       await loadConversations();
+
+      // Refresh unread counts in header (with small delay to ensure Firebase update is complete)
+      setTimeout(() => {
+        refreshUnreadCounts();
+      }, 100);
     } catch (error) {
       console.error("Error sending message:", error);
       alert("Failed to send message. Please try again.");
