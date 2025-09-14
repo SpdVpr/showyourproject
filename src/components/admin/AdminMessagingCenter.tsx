@@ -44,13 +44,25 @@ export function AdminMessagingCenter() {
   const [showNewConversationDialog, setShowNewConversationDialog] = useState(false);
   const [showBroadcastDialog, setShowBroadcastDialog] = useState(false);
 
-  // Check if user is admin
-  if (!user || user.role !== 'admin') {
+  // Check if user is admin (multiple ways to verify)
+  const isAdmin = user && (
+    user.email === "admin@showyourproject.com" ||
+    user.tier === "admin" ||
+    user.role === "admin" ||
+    user.isAdmin === true
+  );
+
+  if (!user || !isAdmin) {
     return (
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
           Access denied. Admin privileges required.
+          {user && (
+            <div className="mt-2 text-xs text-gray-500">
+              Debug: email={user.email}, role={user.role}, tier={user.tier}, isAdmin={user.isAdmin}
+            </div>
+          )}
         </AlertDescription>
       </Alert>
     );

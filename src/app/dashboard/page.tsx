@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,16 +10,18 @@ import Link from "next/link";
 import { Plus, BarChart3, Eye, ExternalLink, Heart, Clock, CheckCircle, XCircle, AlertCircle, Coins, MessageCircle, TrendingUp, Trophy, Star, Info } from "lucide-react";
 import { PointsSystem } from "@/components/dashboard/PointsSystem";
 import { MessagingDashboard } from "@/components/messaging/MessagingDashboard";
-import { AdminMessages } from "@/components/messaging/AdminMessages";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { projectService, userService } from "@/lib/firebaseServices";
+import { useSearchParams } from "next/navigation";
 import type { Project } from "@/types";
 
 // Real user projects will be loaded from Firebase
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { user, logout, refreshUser } = useAuth();
-  const [activeTab, setActiveTab] = useState("overview");
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
   const [userProjects, setUserProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -548,10 +550,7 @@ export default function DashboardPage() {
         </TabsContent>
 
         <TabsContent value="messages" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AdminMessages />
-            <MessagingDashboard />
-          </div>
+          <MessagingDashboard />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
@@ -586,5 +585,13 @@ export default function DashboardPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-8">Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

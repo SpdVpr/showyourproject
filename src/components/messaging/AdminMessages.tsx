@@ -35,12 +35,11 @@ export function AdminMessages() {
   const loadAdminConversation = async () => {
     try {
       setLoading(true);
-      const conversations = await messagingService.getAdminConversations();
-      const userConversation = conversations.find(conv => conv.userId === user.id);
-      setAdminConversation(userConversation || null);
-      
+      const userConversation = await messagingService.getUserAdminConversation(user.id);
+      setAdminConversation(userConversation);
+
       if (userConversation) {
-        await loadMessages(userConversation);
+        await loadMessages();
       }
     } catch (error) {
       console.error("Error loading admin conversation:", error);
@@ -50,14 +49,14 @@ export function AdminMessages() {
   };
 
   // Load messages for admin conversation
-  const loadMessages = async (conversation: AdminConversation) => {
+  const loadMessages = async () => {
     try {
       setLoadingMessages(true);
-      const conversationMessages = await messagingService.getAdminConversationMessages(conversation.id);
+      const conversationMessages = await messagingService.getUserAdminMessages(user.id);
       setMessages(conversationMessages);
-      
+
       // Mark messages as read
-      if (conversation.unreadCount > 0) {
+      if (adminConversation && adminConversation.unreadCount > 0) {
         // Note: We would need to add a function to mark admin messages as read
         // For now, we'll just update the local state
       }

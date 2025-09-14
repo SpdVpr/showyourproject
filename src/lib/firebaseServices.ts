@@ -1709,5 +1709,53 @@ export const messagingService = {
         return bTime.getTime() - aTime.getTime();
       }).slice(0, 50);
     }
+  },
+
+  // Get user's admin conversation (for users to see their admin messages)
+  async getUserAdminConversation(userId: string) {
+    try {
+      const conversationId = `admin_${userId}`;
+      const conversationRef = doc(db, 'adminConversations', conversationId);
+      const snapshot = await getDoc(conversationRef);
+
+      if (snapshot.exists()) {
+        return { id: snapshot.id, ...snapshot.data() } as AdminConversation;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error loading user admin conversation:', error);
+      return null;
+    }
+  },
+
+  // Get messages for user's admin conversation
+  async getUserAdminMessages(userId: string) {
+    try {
+      const conversationId = `admin_${userId}`;
+      const messagesRef = collection(db, 'messages');
+      const q = query(
+        messagesRef,
+        where('conversationId', '==', conversationId),
+        orderBy('createdAt', 'asc')
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+    } catch (indexError) {
+      console.warn('Index not available for user admin messages, using fallback');
+
+      // Fallback: get all messages and filter client-side
+      const messagesRef = collection(db, 'messages');
+      const snapshot = await getDocs(messagesRef);
+      const allMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+      const conversationId = `admin_${userId}`;
+
+      return allMessages
+        .filter(message => message.conversationId === conversationId)
+        .sort((a, b) => {
+          const aTime = a.createdAt?.toDate?.() || new Date(0);
+          const bTime = b.createdAt?.toDate?.() || new Date(0);
+          return aTime.getTime() - bTime.getTime();
+        });
+    }
   }
 };

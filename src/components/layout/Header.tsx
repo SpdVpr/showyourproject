@@ -21,13 +21,16 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TagSearch } from "@/components/navigation/TagSearch";
 import { EmailVerificationStatus } from "@/components/auth/EmailVerificationStatus";
-import { Menu, X, User, Settings, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, User, Settings, LogOut, LayoutDashboard, MessageCircle, Bell } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { Badge } from "@/components/ui/badge";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { totalUnread, adminUnreadCount, unreadCount } = useUnreadMessages();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -77,6 +80,23 @@ export function Header() {
           {user ? (
             <>
               <EmailVerificationStatus />
+
+              {/* Messages Notification */}
+              <Button variant="outline" size="sm" asChild className="relative">
+                <Link href="/dashboard?tab=messages" className="flex items-center space-x-2">
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Messages</span>
+                  {totalUnread > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 hover:bg-red-600"
+                    >
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </Badge>
+                  )}
+                </Link>
+              </Button>
+
               <Button variant="outline" size="sm" asChild>
                 <Link href="/dashboard" className="flex items-center space-x-2">
                   <LayoutDashboard className="h-4 w-4" />
@@ -213,6 +233,20 @@ export function Header() {
                     <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                       <User className="mr-2 h-4 w-4" />
                       Dashboard
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start relative" asChild>
+                    <Link href="/dashboard?tab=messages" onClick={() => setMobileMenuOpen(false)}>
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Messages
+                      {totalUnread > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="ml-auto h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500"
+                        >
+                          {totalUnread > 99 ? '99+' : totalUnread}
+                        </Badge>
+                      )}
                     </Link>
                   </Button>
                   <Button variant="ghost" className="w-full justify-start" asChild>

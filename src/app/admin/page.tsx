@@ -180,7 +180,15 @@ export default function AdminPage() {
     try {
       setLoadingUsers(true);
       const allUsers = await userService.getAllUsers();
-      setUsers(allUsers);
+
+      // Sort users by registration date (newest first)
+      const sortedUsers = allUsers.sort((a, b) => {
+        const aTime = a.createdAt?.toDate?.() || new Date(0);
+        const bTime = b.createdAt?.toDate?.() || new Date(0);
+        return bTime.getTime() - aTime.getTime();
+      });
+
+      setUsers(sortedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
@@ -793,7 +801,7 @@ export default function AdminPage() {
                                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                                   <span>{user.email}</span>
                                   {user.createdAt && (
-                                    <span>Joined {user.createdAt.toDate().toLocaleDateString()}</span>
+                                    <span>Joined {user.createdAt.toDate().toLocaleDateString()} at {user.createdAt.toDate().toLocaleTimeString()}</span>
                                   )}
                                   <span>{user.projectsSubmitted || 0} projects</span>
                                   {user.points && (

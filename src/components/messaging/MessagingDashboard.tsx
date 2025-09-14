@@ -9,33 +9,70 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MessageCircle, Send, User, Clock, Mail, Shield } from "lucide-react";
-import type { Conversation, Message } from "@/types";
+import type { Conversation, Message, AdminConversation } from "@/types";
+
+interface ExtendedConversation extends Conversation {
+  isAdmin?: boolean;
+}
 
 export function MessagingDashboard() {
   const { user } = useAuth();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [conversations, setConversations] = useState<ExtendedConversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<ExtendedConversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
 
-  // Load user's conversations
+  // Load user's conversations (both regular and admin)
   const loadConversations = async () => {
     if (!user) return;
 
     try {
       setLoading(true);
-      console.log("messagingService:", messagingService);
-      console.log("getUserConversations method:", messagingService?.getUserConversations);
+      const allConversations: ExtendedConversation[] = [];
 
-      if (!messagingService || !messagingService.getUserConversations) {
-        throw new Error("messagingService or getUserConversations method is not available");
+      // Load regular conversations
+      try {
+        const userConversations = await messagingService.getUserConversations(user.id);
+        allConversations.push(...userConversations.map(conv => ({ ...conv, isAdmin: false })));
+      } catch (error) {
+        console.warn("Error loading regular conversations:", error);
       }
 
-      const userConversations = await messagingService.getUserConversations(user.id);
-      setConversations(userConversations);
+      // Load admin conversation
+      try {
+        const adminConversation = await messagingService.getUserAdminConversation(user.id);
+        if (adminConversation) {
+          // Convert admin conversation to regular conversation format
+          const adminAsConversation: ExtendedConversation = {
+            id: adminConversation.id,
+            participants: [user.id, 'admin'],
+            participantNames: [user.displayName || user.email || 'User', 'ShowYourProject Admin'],
+            participantEmails: [user.email || '', 'admin@showyourproject.com'],
+            projectId: '',
+            projectName: 'Admin Support',
+            lastMessage: adminConversation.lastMessage || '',
+            lastMessageAt: adminConversation.lastMessageAt,
+            unreadCount: adminConversation.unreadCount || 0,
+            createdAt: adminConversation.createdAt,
+            isAdmin: true
+          };
+          allConversations.push(adminAsConversation);
+        }
+      } catch (error) {
+        console.warn("Error loading admin conversation:", error);
+      }
+
+      // Sort by last message time
+      allConversations.sort((a, b) => {
+        const aTime = a.lastMessageAt?.toDate?.() || new Date(0);
+        const bTime = b.lastMessageAt?.toDate?.() || new Date(0);
+        return bTime.getTime() - aTime.getTime();
+      });
+
+      setConversations(allConversations);
     } catch (error) {
       console.error("Error loading conversations:", error);
     } finally {
@@ -44,10 +81,18 @@ export function MessagingDashboard() {
   };
 
   // Load messages for selected conversation
-  const loadMessages = async (conversation: Conversation) => {
+  const loadMessages = async (conversation: ExtendedConversation) => {
     try {
       setLoadingMessages(true);
-      const conversationMessages = await messagingService.getConversationMessages(conversation.id);
+      let conversationMessages: Message[];
+
+      if (conversation.isAdmin) {
+        // Load admin messages
+        conversationMessages = await messagingService.getUserAdminMessages(user.id);
+      } else {
+        // Load regular messages
+        conversationMessages = await messagingService.getConversationMessages(conversation.id);
+      }
       setMessages(conversationMessages);
 
       // Mark messages as read
@@ -76,13 +121,25 @@ export function MessagingDashboard() {
 
     setSending(true);
     try {
-      await messagingService.sendMessage(
-        selectedConversation.id,
-        user.id,
-        user.displayName || "User",
-        user.email || "",
-        newMessage
-      );
+      if (selectedConversation.isAdmin) {
+        // Send message to admin conversation
+        await messagingService.sendMessage(
+          selectedConversation.id,
+          user.id,
+          user.displayName || "User",
+          user.email || "",
+          newMessage
+        );
+      } else {
+        // Send regular message
+        await messagingService.sendMessage(
+          selectedConversation.id,
+          user.id,
+          user.displayName || "User",
+          user.email || "",
+          newMessage
+        );
+      }
 
       setNewMessage("");
       // Reload messages and conversations
@@ -172,18 +229,28 @@ export function MessagingDashboard() {
             <div className="space-y-1">
               {conversations.map((conversation) => {
                 const isOwner = user.id === conversation.projectOwnerId;
-                const otherPerson = isOwner ? conversation.contacterName : conversation.projectOwnerName;
-                const unreadCount = conversation.unreadCount?.[user.id] || 0;
+                const otherPerson = conversation.isAdmin
+                  ? 'ShowYourProject Admin'
+                  : (isOwner ? conversation.contacterName : conversation.projectOwnerName);
+                const unreadCount = conversation.isAdmin
+                  ? conversation.unreadCount || 0
+                  : conversation.unreadCount?.[user.id] || 0;
 
                 return (
                   <div
                     key={conversation.id}
                     className={`p-4 border-b cursor-pointer transition-all duration-200 relative ${
                       selectedConversation?.id === conversation.id
-                        ? 'bg-blue-50 border-blue-200 shadow-sm'
+                        ? conversation.isAdmin
+                          ? 'bg-purple-50 border-purple-200 shadow-sm'
+                          : 'bg-blue-50 border-blue-200 shadow-sm'
                         : unreadCount > 0
-                          ? 'bg-orange-50 hover:bg-orange-100 border-l-4 border-l-orange-400'
-                          : 'hover:bg-gray-50 hover:shadow-sm'
+                          ? conversation.isAdmin
+                            ? 'bg-purple-50 hover:bg-purple-100 border-l-4 border-l-purple-400'
+                            : 'bg-orange-50 hover:bg-orange-100 border-l-4 border-l-orange-400'
+                          : conversation.isAdmin
+                            ? 'hover:bg-purple-25 hover:shadow-sm'
+                            : 'hover:bg-gray-50 hover:shadow-sm'
                     }`}
                     onClick={() => {
                       // Don't reload if already selected
@@ -195,22 +262,37 @@ export function MessagingDashboard() {
                   >
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center space-x-2">
-                        <User className={`h-4 w-4 ${unreadCount > 0 ? 'text-orange-600' : 'text-muted-foreground'}`} />
+                        {conversation.isAdmin ? (
+                          <Shield className={`h-4 w-4 ${unreadCount > 0 ? 'text-purple-600' : 'text-purple-500'}`} />
+                        ) : (
+                          <User className={`h-4 w-4 ${unreadCount > 0 ? 'text-orange-600' : 'text-muted-foreground'}`} />
+                        )}
                         <span className={`text-sm ${unreadCount > 0 ? 'font-bold text-gray-900' : 'font-medium'}`}>
                           {otherPerson}
                         </span>
+                        {conversation.isAdmin && (
+                          <Badge variant="outline" className="text-xs bg-purple-100 text-purple-700 border-purple-200">
+                            Admin
+                          </Badge>
+                        )}
                         {unreadCount > 0 && (
-                          <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                          <div className={`w-2 h-2 rounded-full animate-pulse ${
+                            conversation.isAdmin ? 'bg-purple-500' : 'bg-orange-500'
+                          }`}></div>
                         )}
                       </div>
                       {unreadCount > 0 && (
-                        <Badge variant="destructive" className="text-xs bg-orange-500 hover:bg-orange-600">
+                        <Badge variant="destructive" className={`text-xs ${
+                          conversation.isAdmin
+                            ? 'bg-purple-500 hover:bg-purple-600'
+                            : 'bg-orange-500 hover:bg-orange-600'
+                        }`}>
                           {unreadCount}
                         </Badge>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">
-                      Re: {conversation.projectName}
+                      {conversation.isAdmin ? 'Admin Support' : `Re: ${conversation.projectName}`}
                     </p>
                     {conversation.lastMessage && (
                       <p className="text-xs text-muted-foreground truncate">
@@ -264,27 +346,46 @@ export function MessagingDashboard() {
                   </div>
                 ) : null}
 
-                {messages.length > 0 && messages.map((message) => (
+                {messages.length > 0 && messages.map((message) => {
+                  const isFromUser = message.senderId === user.id;
+                  const isFromAdmin = selectedConversation?.isAdmin && !isFromUser;
+
+                  return (
                     <div
                       key={message.id}
-                      className={`flex ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${isFromUser ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
                         className={`max-w-[70%] p-3 rounded-lg ${
-                          message.senderId === user.id
+                          isFromUser
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white border'
+                            : isFromAdmin
+                              ? 'bg-purple-100 border border-purple-200'
+                              : 'bg-white border'
                         }`}
                       >
-                        <p className="text-sm">{message.content}</p>
+                        {isFromAdmin && (
+                          <div className="flex items-center space-x-1 mb-1">
+                            <Shield className="h-3 w-3 text-purple-600" />
+                            <span className="text-xs font-medium text-purple-700">Admin</span>
+                          </div>
+                        )}
+                        <p className={`text-sm ${isFromAdmin ? 'text-purple-900' : ''}`}>
+                          {message.content}
+                        </p>
                         <p className={`text-xs mt-1 ${
-                          message.senderId === user.id ? 'text-blue-100' : 'text-muted-foreground'
+                          isFromUser
+                            ? 'text-blue-100'
+                            : isFromAdmin
+                              ? 'text-purple-600'
+                              : 'text-muted-foreground'
                         }`}>
                           {message.createdAt.toDate().toLocaleString()}
                         </p>
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
 
               </div>
 

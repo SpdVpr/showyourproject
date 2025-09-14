@@ -41,6 +41,8 @@ export function SubmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [urlMetadata, setUrlMetadata] = useState<any>(null);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
 
   const form = useForm<ProjectSubmission>({
@@ -96,7 +98,20 @@ export function SubmissionForm() {
     setValue("tags", updatedTags);
   };
 
+  const scrollToFirstError = () => {
+    setTimeout(() => {
+      const firstErrorElement = document.querySelector('[data-error="true"]');
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }, 100);
+  };
+
   const nextStep = async () => {
+    setValidationErrors([]);
     let fieldsToValidate: (keyof ProjectSubmission)[] = [];
 
     switch (currentStep) {
@@ -107,14 +122,35 @@ export function SubmissionForm() {
     }
 
     const isValid = await trigger(fieldsToValidate);
-    if (isValid) {
-      // Check if we have required data
-      if (currentStep === 1) {
-        if (!urlMetadata && !useCustomThumbnail) {
-          alert('Please wait for website metadata to load or provide a custom thumbnail.');
-          return;
-        }
+
+    // Check for validation errors and collect them
+    const currentErrors: string[] = [];
+    fieldsToValidate.forEach(field => {
+      if (errors[field]) {
+        currentErrors.push(`${field}: ${errors[field]?.message}`);
       }
+    });
+
+    // Check tags separately since it's not in the form schema
+    if (tags.length === 0) {
+      currentErrors.push("tags: At least one tag is required");
+    }
+
+    // Check thumbnail requirement
+    if (currentStep === 1) {
+      const hasThumbnail = thumbnailFile || (urlMetadata && urlMetadata.image);
+      if (!hasThumbnail) {
+        currentErrors.push("thumbnail: Thumbnail is required - either upload an image or wait for website metadata to load");
+      }
+    }
+
+    if (currentErrors.length > 0) {
+      setValidationErrors(currentErrors);
+      scrollToFirstError();
+      return;
+    }
+
+    if (isValid) {
       setCurrentStep(prev => Math.min(prev + 1, steps.length));
     }
   };
@@ -227,9 +263,19 @@ export function SubmissionForm() {
     console.log("Thumbnail file:", thumbnailFile);
     console.log("URL metadata:", urlMetadata);
 
+    // Clear previous errors
+    setSubmitError("");
+
     if (!user || !user.id) {
       console.error("User not authenticated:", { user, hasId: !!user?.id });
-      alert("Please log in to submit a project.");
+      setSubmitError("Please log in to submit a project.");
+      return;
+    }
+
+    // Final validation before submit
+    const hasThumbnail = thumbnailFile || (urlMetadata && urlMetadata.image);
+    if (!hasThumbnail) {
+      setSubmitError("Thumbnail is required. Please upload an image or ensure website metadata loads properly.");
       return;
     }
 
@@ -242,21 +288,37 @@ export function SubmissionForm() {
         // User uploaded a file
         console.log("Uploading and optimizing thumbnail...");
         const tempProjectId = `temp_${Date.now()}`;
-        thumbnailUrl = await uploadProjectThumbnail(thumbnailFile, tempProjectId);
+        try {
+          thumbnailUrl = await uploadProjectThumbnail(thumbnailFile, tempProjectId);
+        } catch (uploadError) {
+          console.error("Thumbnail upload failed:", uploadError);
+          throw new Error("Failed to upload thumbnail image. Please try a different image or check your internet connection.");
+        }
       } else if (urlMetadata && urlMetadata.image) {
         // Download and upload auto-detected image from metadata to Firebase Storage
         console.log("Downloading and uploading thumbnail from metadata...");
         const tempProjectId = `temp_${Date.now()}`;
-        thumbnailUrl = await downloadAndUploadImage(urlMetadata.image, tempProjectId, 'thumbnail');
+        try {
+          thumbnailUrl = await downloadAndUploadImage(urlMetadata.image, tempProjectId, 'thumbnail');
+        } catch (downloadError) {
+          console.error("Thumbnail download failed:", downloadError);
+          throw new Error("Failed to download thumbnail from website. Please upload a custom thumbnail image instead.");
+        }
       }
 
-      // Upload gallery images with optimization
+      // Upload gallery images with optimization (optional)
       const galleryUrls: string[] = [];
       if (galleryFiles.length > 0) {
         console.log("Uploading and optimizing gallery images...");
         const tempProjectId = `temp_${Date.now()}`;
-        const urls = await uploadProjectGallery(galleryFiles, tempProjectId);
-        galleryUrls.push(...urls);
+        try {
+          const urls = await uploadProjectGallery(galleryFiles, tempProjectId);
+          galleryUrls.push(...urls);
+        } catch (galleryError) {
+          console.error("Gallery upload failed:", galleryError);
+          // Gallery is optional, so we continue without it but log the error
+          console.warn("Gallery images failed to upload, continuing without them");
+        }
       }
 
       // Prepare project data
@@ -293,13 +355,16 @@ export function SubmissionForm() {
 
       // Validate required fields
       if (!projectData.submitterId) {
-        throw new Error("User ID is missing");
+        throw new Error("Authentication error: User ID is missing. Please log out and log back in.");
       }
       if (!projectData.name) {
-        throw new Error("Project name is required");
+        throw new Error("Project name is required and cannot be empty.");
       }
       if (!projectData.websiteUrl) {
-        throw new Error("Website URL is required");
+        throw new Error("Website URL is required and cannot be empty.");
+      }
+      if (!thumbnailUrl) {
+        throw new Error("Thumbnail image is required. Please upload an image or ensure website metadata loads properly.");
       }
 
       // Submit to Firebase
@@ -336,14 +401,31 @@ export function SubmissionForm() {
     } catch (error: any) {
       console.error("Error submitting project:", error);
 
-      // Handle specific error types
-      if (error.message && error.message.includes('duplicate URL')) {
-        alert("❌ A project with this URL already exists. Please use a different website URL.");
-      } else if (error.message && error.message.includes('URL already exists')) {
-        alert("❌ A project with this URL already exists. Please use a different website URL.");
+      // Handle specific error types with detailed messages
+      let errorMessage = "❌ Failed to submit project. ";
+
+      if (error.message) {
+        if (error.message.includes('duplicate URL') || error.message.includes('URL already exists')) {
+          errorMessage = "❌ A project with this URL already exists. Please use a different website URL.";
+        } else if (error.message.includes('thumbnail') || error.message.includes('image')) {
+          errorMessage = `❌ Image Error: ${error.message}`;
+        } else if (error.message.includes('Authentication') || error.message.includes('User ID')) {
+          errorMessage = `❌ Authentication Error: ${error.message}`;
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "❌ Network Error: Please check your internet connection and try again.";
+        } else if (error.message.includes('storage') || error.message.includes('upload')) {
+          errorMessage = `❌ Upload Error: ${error.message}`;
+        } else {
+          errorMessage = `❌ Error: ${error.message}`;
+        }
       } else {
-        alert("❌ Failed to submit project. Please try again.");
+        errorMessage = "❌ An unexpected error occurred. Please try again or contact support if the problem persists.";
       }
+
+      setSubmitError(errorMessage);
+
+      // Scroll to top to show error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
     }
@@ -361,9 +443,11 @@ export function SubmissionForm() {
             className="space-y-4 md:space-y-8"
           >
             {/* URL Input - FIRST */}
-            <div className="relative">
+            <div className="relative" data-error={!!errors.websiteUrl}>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
-              <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg">
+              <div className={`relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border shadow-lg ${
+                errors.websiteUrl ? 'border-red-300' : 'border-gray-100'
+              }`}>
                 <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                   <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -478,9 +562,11 @@ export function SubmissionForm() {
             </div>
 
             {/* Project Name Input */}
-            <div className="relative">
+            <div className="relative" data-error={!!errors.name}>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
-              <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg">
+              <div className={`relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border shadow-lg ${
+                errors.name ? 'border-red-300' : 'border-gray-100'
+              }`}>
                 <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                   <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -534,9 +620,11 @@ export function SubmissionForm() {
             </div>
 
             {/* Short Description Input */}
-            <div className="relative">
+            <div className="relative" data-error={!!errors.tagline}>
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/10 to-teal-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
-              <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg">
+              <div className={`relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border shadow-lg ${
+                errors.tagline ? 'border-red-300' : 'border-gray-100'
+              }`}>
                 <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                   <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -585,9 +673,11 @@ export function SubmissionForm() {
             </div>
 
             {/* Full Description */}
-            <div className="relative">
+            <div className="relative" data-error={!!errors.description}>
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-purple-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
-              <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg">
+              <div className={`relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border shadow-lg ${
+                errors.description ? 'border-red-300' : 'border-gray-100'
+              }`}>
                 <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                   <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -646,9 +736,11 @@ export function SubmissionForm() {
             {/* Category & Tags */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* Category */}
-              <div className="relative">
+              <div className="relative" data-error={!!errors.category}>
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-600/10 to-red-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col">
+                <div className={`relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col ${
+                  errors.category ? 'border-red-300' : 'border-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                     <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-orange-600 to-red-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -687,9 +779,11 @@ export function SubmissionForm() {
               </div>
 
               {/* Tags */}
-              <div className="relative">
+              <div className="relative" data-error={tags.length === 0}>
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-600/10 to-cyan-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col">
+                <div className={`relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col ${
+                  tags.length === 0 ? 'border-red-300' : 'border-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                     <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-teal-600 to-cyan-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -761,6 +855,15 @@ export function SubmissionForm() {
                         <div className="text-gray-400 text-sm">No tags added yet</div>
                       )}
                     </div>
+
+                    {tags.length === 0 && (
+                      <p className="text-sm text-red-500 mt-2 flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        At least one tag is required
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -769,9 +872,11 @@ export function SubmissionForm() {
             {/* Team Size & Founded Year */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* Team Size */}
-              <div className="relative">
+              <div className="relative" data-error={!!errors.teamSize}>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col">
+                <div className={`relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col ${
+                  errors.teamSize ? 'border-red-300' : 'border-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                     <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -810,9 +915,11 @@ export function SubmissionForm() {
               </div>
 
               {/* Founded Year */}
-              <div className="relative">
+              <div className="relative" data-error={!!errors.foundedYear}>
                 <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-emerald-600/10 rounded-xl md:rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-100 shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col">
+                <div className={`relative bg-white rounded-xl md:rounded-2xl p-4 md:p-8 border shadow-lg min-h-[200px] md:min-h-[280px] flex flex-col ${
+                  errors.foundedYear ? 'border-red-300' : 'border-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
                     <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -854,9 +961,11 @@ export function SubmissionForm() {
             {/* Images Upload */}
             <div className="space-y-6">
               {/* Thumbnail Upload */}
-              <div className="relative">
+              <div className="relative" data-error={!thumbnailFile && !(urlMetadata && urlMetadata.image)}>
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-600/10 to-rose-600/10 rounded-2xl blur-xl"></div>
-                <div className="relative bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
+                <div className={`relative bg-white rounded-2xl p-8 border shadow-lg ${
+                  !thumbnailFile && !(urlMetadata && urlMetadata.image) ? 'border-red-300' : 'border-gray-100'
+                }`}>
                   <div className="flex items-center space-x-4 mb-6">
                     <div className="w-12 h-12 bg-gradient-to-r from-pink-600 to-rose-600 rounded-xl flex items-center justify-center">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -864,8 +973,11 @@ export function SubmissionForm() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">Project Thumbnail</h3>
-                      <p className="text-gray-600">Main image for your project card</p>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        Project Thumbnail
+                        <span className="text-red-500 ml-1">*</span>
+                      </h3>
+                      <p className="text-gray-600">Main image for your project card (required)</p>
                     </div>
                   </div>
 
@@ -979,6 +1091,15 @@ export function SubmissionForm() {
                         </div>
                       )}
                     </div>
+
+                    {!thumbnailFile && !(urlMetadata && urlMetadata.image) && (
+                      <p className="text-sm text-red-500 mt-4 flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Thumbnail is required - either upload an image or wait for website metadata to load
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -995,7 +1116,7 @@ export function SubmissionForm() {
                     </div>
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900">Gallery Images</h3>
-                      <p className="text-gray-600">Additional screenshots (up to 5)</p>
+                      <p className="text-gray-600">Additional screenshots (optional, up to 5)</p>
                     </div>
                   </div>
 
@@ -1339,6 +1460,39 @@ export function SubmissionForm() {
               <p className="text-xs md:text-sm text-gray-600">{steps[currentStep - 1].description}</p>
             </div>
           </div>
+
+          {/* Error Messages */}
+          {submitError && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">Submission Error</h3>
+                  <p className="text-sm text-red-700 mt-1">{submitError}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {validationErrors.length > 0 && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-yellow-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-yellow-800">Please fix the following issues:</h3>
+                  <ul className="text-sm text-yellow-700 mt-1 list-disc list-inside">
+                    {validationErrors.map((error, index) => (
+                      <li key={index}>{error.split(': ')[1] || error}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
         </CardHeader>
 
         <div>
