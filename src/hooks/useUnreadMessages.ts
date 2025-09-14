@@ -32,7 +32,11 @@ export function useUnreadMessages() {
       let regularUnread = 0;
       try {
         const conversations = await messagingService.getUserConversations(user.id);
-        regularUnread = conversations.reduce((total, conv) => total + (conv.unreadCount || 0), 0);
+        regularUnread = conversations.reduce((total, conv) => {
+          // Regular conversations have unreadCount as object {userId: number}
+          const userUnreadCount = conv.unreadCount?.[user.id] || 0;
+          return total + userUnreadCount;
+        }, 0);
 
         // Store conversation IDs for message filtering
         userConversationsRef.current = conversations.map(conv => conv.id);
@@ -66,6 +70,15 @@ export function useUnreadMessages() {
       setUnreadCount(regularUnread);
       setAdminUnreadCount(adminUnread);
       previousTotalRef.current = newTotal;
+
+      // Debug logging
+      console.log('useUnreadMessages - loadUnreadCounts:', {
+        regularUnread,
+        adminUnread,
+        newTotal,
+        userId: user.id,
+        userConversations: userConversationsRef.current
+      });
     } catch (error) {
       console.error("Error loading unread counts:", error);
     } finally {
