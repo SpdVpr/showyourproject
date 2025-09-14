@@ -101,11 +101,18 @@ export function MessagingDashboard() {
 
         // Update unread count locally instead of reloading all conversations
         setConversations(prevConversations =>
-          prevConversations.map(conv =>
-            conv.id === conversation.id
-              ? { ...conv, unreadCount: { ...conv.unreadCount, [user.id]: 0 } }
-              : conv
-          )
+          prevConversations.map(conv => {
+            if (conv.id === conversation.id) {
+              if (conversation.isAdmin) {
+                // Admin conversation has simple unreadCount number
+                return { ...conv, unreadCount: 0 };
+              } else {
+                // Regular conversation has unreadCount object
+                return { ...conv, unreadCount: { ...conv.unreadCount, [user.id]: 0 } };
+              }
+            }
+            return conv;
+          })
         );
       }
     } catch (error) {

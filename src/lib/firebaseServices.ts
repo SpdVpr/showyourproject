@@ -1369,11 +1369,20 @@ export const messagingService = {
   // Mark messages as read
   async markMessagesAsRead(conversationId: string, userId: string) {
     try {
-      // Update conversation unread count
-      const conversationRef = doc(db, 'conversations', conversationId);
-      await updateDoc(conversationRef, {
-        [`unreadCount.${userId}`]: 0
-      });
+      // Check if this is an admin conversation
+      if (conversationId.startsWith('admin_')) {
+        // Update admin conversation unread count
+        const adminConversationRef = doc(db, 'adminConversations', conversationId);
+        await updateDoc(adminConversationRef, {
+          unreadCount: 0
+        });
+      } else {
+        // Update regular conversation unread count
+        const conversationRef = doc(db, 'conversations', conversationId);
+        await updateDoc(conversationRef, {
+          [`unreadCount.${userId}`]: 0
+        });
+      }
 
       // Mark messages as read
       try {
