@@ -1504,32 +1504,30 @@ export const messagingService = {
   // Start admin conversation with a user
   async startAdminConversation(adminId: string, adminName: string, adminEmail: string, userId: string, userName: string, userEmail: string) {
     try {
-      // Check if admin conversation already exists
-      const conversationsRef = collection(db, 'adminConversations');
-      const q = query(
-        conversationsRef,
-        where('userId', '==', userId)
-      );
-      const snapshot = await getDocs(q);
+      // Use consistent conversation ID
+      const conversationId = `admin_${userId}`;
+      const conversationRef = doc(db, 'adminConversations', conversationId);
+      const snapshot = await getDoc(conversationRef);
 
-      if (!snapshot.empty) {
+      if (snapshot.exists()) {
         // Return existing conversation
-        const doc = snapshot.docs[0];
-        return { id: doc.id, ...doc.data() } as AdminConversation;
+        return { id: snapshot.id, ...snapshot.data() } as AdminConversation;
       }
 
-      // Create new admin conversation
+      // Create new admin conversation with fixed ID
       const conversationData: Omit<AdminConversation, 'id'> = {
         userId,
         userName,
         userEmail,
         unreadCount: 0,
         createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any
+        updatedAt: serverTimestamp() as any,
+        lastMessage: '',
+        lastMessageAt: null
       };
 
-      const docRef = await addDoc(conversationsRef, conversationData);
-      return { id: docRef.id, ...conversationData } as AdminConversation;
+      await setDoc(conversationRef, conversationData);
+      return { id: conversationId, ...conversationData } as AdminConversation;
 
     } catch (error) {
       console.error('Error starting admin conversation:', error);
