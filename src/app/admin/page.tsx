@@ -314,52 +314,54 @@ export default function AdminPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-11">
-          <TabsTrigger value="overview" className="flex items-center space-x-2">
-            <BarChart3 className="h-4 w-4" />
-            <span>Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="projects" className="flex items-center space-x-2">
-            <FileText className="h-4 w-4" />
-            <span>Review</span>
-          </TabsTrigger>
-          <TabsTrigger value="approved" className="flex items-center space-x-2">
-            <FileText className="h-4 w-4" />
-            <span>Approved</span>
-          </TabsTrigger>
-          <TabsTrigger value="featured" className="flex items-center space-x-2">
-            <Star className="h-4 w-4" />
-            <span>Featured</span>
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center space-x-2">
-            <Users className="h-4 w-4" />
-            <span>Users</span>
-          </TabsTrigger>
-          <TabsTrigger value="messages" className="flex items-center space-x-2">
-            <MessageCircle className="h-4 w-4" />
-            <span>Messages</span>
-          </TabsTrigger>
-          <TabsTrigger value="admin-messaging" className="flex items-center space-x-2">
-            <MessageCircle className="h-4 w-4" />
-            <span>Admin Chat</span>
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center space-x-2">
-            <AlertTriangle className="h-4 w-4" />
-            <span>Reports</span>
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center space-x-2">
-            <Settings className="h-4 w-4" />
-            <span>Settings</span>
-          </TabsTrigger>
-          <TabsTrigger value="social" className="flex items-center space-x-2">
-            <MessageCircle className="h-4 w-4" />
-            <span>Social Media</span>
-          </TabsTrigger>
-          <TabsTrigger value="seo" className="flex items-center space-x-2">
-            <Search className="h-4 w-4" />
-            <span>SEO</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto">
+          <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-max">
+            <TabsTrigger value="overview" className="flex items-center space-x-1 whitespace-nowrap">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="flex items-center space-x-1 whitespace-nowrap">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Review</span>
+            </TabsTrigger>
+            <TabsTrigger value="approved" className="flex items-center space-x-1 whitespace-nowrap">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Approved</span>
+            </TabsTrigger>
+            <TabsTrigger value="featured" className="flex items-center space-x-1 whitespace-nowrap">
+              <Star className="h-4 w-4" />
+              <span className="hidden sm:inline">Featured</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center space-x-1 whitespace-nowrap">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="flex items-center space-x-1 whitespace-nowrap">
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Messages</span>
+            </TabsTrigger>
+            <TabsTrigger value="admin-messaging" className="flex items-center space-x-1 whitespace-nowrap">
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Admin Chat</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center space-x-1 whitespace-nowrap">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="hidden sm:inline">Reports</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center space-x-1 whitespace-nowrap">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Settings</span>
+            </TabsTrigger>
+            <TabsTrigger value="social" className="flex items-center space-x-1 whitespace-nowrap">
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Social Media</span>
+            </TabsTrigger>
+            <TabsTrigger value="seo" className="flex items-center space-x-1 whitespace-nowrap">
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline">SEO</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-6">
           <AdminStats />

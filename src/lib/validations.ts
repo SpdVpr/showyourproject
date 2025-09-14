@@ -36,8 +36,14 @@ export const projectSubmissionSchema = z.object({
     .max(160, 'Tagline must be less than 160 characters'),
 
   description: z.string()
-    .min(100, 'Description must be at least 100 characters')
-    .max(1500, 'Description must be less than 1500 characters'),
+    .refine((val) => {
+      const textOnly = val.replace(/<[^>]*>/g, '');
+      return textOnly.length >= 100;
+    }, 'Description must be at least 100 characters')
+    .refine((val) => {
+      const textOnly = val.replace(/<[^>]*>/g, '');
+      return textOnly.length <= 1500;
+    }, 'Description must be less than 1500 characters'),
 
   websiteUrl: z.string()
     .transform(normalizeUrl)
@@ -80,8 +86,14 @@ export const basicInfoSchema = z.object({
     .refine((url) => !url.includes('localhost'), 'Local URLs are not allowed'),
   
   description: z.string()
-    .min(100, 'Description must be at least 100 characters')
-    .max(1500, 'Description must be less than 1500 characters'),
+    .refine((val) => {
+      const textOnly = val.replace(/<[^>]*>/g, '');
+      return textOnly.length >= 100;
+    }, 'Description must be at least 100 characters')
+    .refine((val) => {
+      const textOnly = val.replace(/<[^>]*>/g, '');
+      return textOnly.length <= 1500;
+    }, 'Description must be less than 1500 characters'),
 });
 
 // Details step validation

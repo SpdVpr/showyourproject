@@ -366,9 +366,9 @@ export function AdminMessagingCenter() {
         </TabsList>
 
         <TabsContent value="conversations">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px] max-h-[80vh] lg:h-[600px]">
             {/* Conversations List */}
-            <Card className="lg:col-span-1">
+            <Card className="lg:col-span-1 overflow-hidden h-full">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <MessageCircle className="h-5 w-5" />
@@ -378,7 +378,7 @@ export function AdminMessagingCenter() {
                   Direct messages with users
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="p-0 h-[calc(100%-120px)] overflow-y-auto">
                 {adminConversations.length === 0 ? (
                   <div className="p-6 text-center">
                     <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -389,7 +389,7 @@ export function AdminMessagingCenter() {
                     {adminConversations.map((conversation) => (
                       <div
                         key={conversation.id}
-                        className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${
+                        className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
                           selectedConversation?.id === conversation.id ? 'bg-blue-50 border-blue-200' : ''
                         }`}
                         onClick={() => {
@@ -398,8 +398,8 @@ export function AdminMessagingCenter() {
                         }}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                          <div className="flex items-center space-x-3 min-w-0 flex-1">
+                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                               <User className="h-5 w-5 text-gray-600" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -412,7 +412,7 @@ export function AdminMessagingCenter() {
                               )}
                             </div>
                           </div>
-                          <div className="flex flex-col items-end space-y-1">
+                          <div className="flex flex-col items-end space-y-1 flex-shrink-0">
                             {conversation.unreadCount > 0 && (
                               <Badge variant="destructive" className="text-xs">
                                 {conversation.unreadCount}
@@ -433,18 +433,18 @@ export function AdminMessagingCenter() {
             </Card>
 
             {/* Messages Area */}
-            <Card className="lg:col-span-2">
+            <Card className="lg:col-span-2 overflow-hidden h-full">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Mail className="h-5 w-5" />
-                  <span>
+                  <span className="truncate">
                     {selectedConversation ? `Chat with ${selectedConversation.userName}` : 'Select a conversation'}
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col h-[600px]">
+              <CardContent className="flex flex-col h-[calc(100%-80px)] p-0">
                 {!selectedConversation ? (
-                  <div className="flex-1 flex items-center justify-center">
+                  <div className="flex-1 flex items-center justify-center p-4">
                     <div className="text-center">
                       <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">Select a conversation to start messaging</p>
@@ -453,7 +453,7 @@ export function AdminMessagingCenter() {
                 ) : (
                   <>
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto space-y-4 mb-4 p-4 bg-gray-50 rounded-lg relative">
+                    <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-gray-50 relative min-h-0">
                       {/* Load More Button */}
                       {hasMoreMessages && messages.length > 0 && (
                         <div className="text-center pb-4">
@@ -525,12 +525,12 @@ export function AdminMessagingCenter() {
                     </div>
 
                     {/* Message Input */}
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 p-4 border-t bg-white">
                       <Textarea
                         placeholder="Type your message..."
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 resize-none"
                         rows={2}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
@@ -542,7 +542,8 @@ export function AdminMessagingCenter() {
                       <Button
                         onClick={handleSendMessage}
                         disabled={sending || !newMessage.trim()}
-                        className="self-end"
+                        className="self-end flex-shrink-0"
+                        size="sm"
                       >
                         <Send className="h-4 w-4" />
                       </Button>
