@@ -32,15 +32,6 @@ export function Header() {
   const { user, logout } = useAuth();
   const { totalUnread, adminUnreadCount, unreadCount, loading } = useUnreadMessages();
 
-  // Debug logging
-  console.log('Header - useUnreadMessages:', {
-    totalUnread,
-    adminUnreadCount,
-    unreadCount,
-    loading,
-    user: user?.id
-  });
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">

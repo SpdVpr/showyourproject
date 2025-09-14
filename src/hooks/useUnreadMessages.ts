@@ -70,15 +70,6 @@ export function useUnreadMessages() {
       setUnreadCount(regularUnread);
       setAdminUnreadCount(adminUnread);
       previousTotalRef.current = newTotal;
-
-      // Debug logging
-      console.log('useUnreadMessages - loadUnreadCounts:', {
-        regularUnread,
-        adminUnread,
-        newTotal,
-        userId: user.id,
-        userConversations: userConversationsRef.current
-      });
     } catch (error) {
       console.error("Error loading unread counts:", error);
     } finally {
