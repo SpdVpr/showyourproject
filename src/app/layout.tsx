@@ -96,8 +96,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Preconnect to external domains */}
+        <link rel="preconnect" href="https://firebaseinstallations.googleapis.com" />
+        <link rel="preconnect" href="https://showyourproject-com.firebaseapp.com" />
+        <link rel="preconnect" href="https://firestore.googleapis.com" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+
+        {/* DNS prefetch for additional domains */}
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+
         {/* Preload critical assets */}
         <link rel="preload" href="/syp-logo.png" as="image" type="image/png" />
+
+        {/* Preload critical CSS */}
+        <link rel="preload" href="/_next/static/css/app/layout.css" as="style" />
+
+        {/* Resource hints for better performance */}
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
 
         {/* Google Analytics */}
         <Script

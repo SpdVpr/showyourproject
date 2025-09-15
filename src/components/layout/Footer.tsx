@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Github, Twitter, Mail } from "lucide-react";
 
 export function Footer() {
@@ -9,10 +10,13 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-3">
-              <img
+              <Image
                 src="/syp-logo.png"
                 alt="ShowYourProject Logo"
+                width={40}
+                height={40}
                 className="h-10 w-10 object-contain"
+                sizes="40px"
               />
               <span className="font-bold text-xl">ShowYourProject</span>
             </Link>
@@ -21,21 +25,24 @@ export function Footer() {
               Get free traffic and quality backlinks.
             </p>
             <div className="flex space-x-4">
-              <Link 
-                href="https://twitter.com" 
+              <Link
+                href="https://twitter.com"
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Follow us on Twitter"
               >
                 <Twitter className="h-5 w-5" />
               </Link>
-              <Link 
-                href="https://github.com" 
+              <Link
+                href="https://github.com"
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="View our GitHub repository"
               >
                 <Github className="h-5 w-5" />
               </Link>
               <Link
                 href="mailto:support@showyourproject.com"
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Contact us via email"
               >
                 <Mail className="h-5 w-5" />
               </Link>
